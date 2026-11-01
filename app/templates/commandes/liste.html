@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager, statut_badge with context %}
+{% block title %}Commandes · StockPro{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h2>Commandes fournisseurs</h2><div class="sub">Réceptionner une commande ajoute le stock automatiquement</div></div>
+  <div class="actions">
+    {% if nb_alertes %}<a class="btn" href="{{ url_for('commandes.nouvelle', alertes=1) }}">🔔 Commander les produits en alerte ({{ nb_alertes }})</a>{% endif %}
+    <a class="btn btn-primary" href="{{ url_for('commandes.nouvelle') }}">+ Nouvelle commande</a>
+  </div>
+</div>
+<form method="get" class="filters">
+  <select name="statut"><option value="">Tous les statuts</option>
+    <option value="brouillon" {{ 'selected' if statut == 'brouillon' }}>Brouillons</option>
+    <option value="envoyee" {{ 'selected' if statut == 'envoyee' }}>Envoyées</option>
+    <option value="recue" {{ 'selected' if statut == 'recue' }}>Reçues</option>
+    <option value="annulee" {{ 'selected' if statut == 'annulee' }}>Annulées</option></select>
+  <button class="btn">Filtrer</button><a class="btn" href="{{ url_for('commandes.liste') }}">Réinitialiser</a>
+</form>
+<div class="card flush table-wrap">
+<table>
+  <thead><tr><th>N°</th><th>Date</th><th>Fournisseur</th><th>Statut</th><th class="num">Total</th><th></th></tr></thead>
+  <tbody>
+  {% for c in page.rows %}
+  <tr><td><strong>BC-{{ '%04d'|format(c.numero) }}</strong></td><td>{{ c.cree_le|dt }}</td><td>{{ c.fournisseur_nom or '-' }}</td>
+      <td>{{ statut_badge(c.statut) }}</td><td class="num"><strong>{{ c.total|money }}</strong></td>
+      <td class="num"><a class="btn btn-sm" href="{{ url_for('commandes.detail', commande_id=c.id) }}">Voir</a></td></tr>
+  {% else %}<tr><td colspan="6" class="empty">Aucune commande.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{{ pager(page) }}
+{% endblock %}

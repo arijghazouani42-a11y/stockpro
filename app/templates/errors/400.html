@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Requête invalide · StockPro{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div class="code">400</div>
+  <h2>Requête invalide</h2>
+  <p class="muted">La page a expiré ou la requête est invalide. Rechargez la page et réessayez.</p>
+  <a class="btn btn-primary" href="{{ url_for('main.index') }}">Retour à l'accueil</a>
+</div>
+{% endblock %}

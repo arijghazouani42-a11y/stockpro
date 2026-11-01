@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Rapports · StockPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Rapports</h2><div class="sub">Valeur du stock, marges et produits à surveiller</div></div></div>
+
+<div class="grid grid-3" style="margin-bottom:20px;">
+  <div class="card stat"><div class="ic ic-indigo">🛒</div><div><div class="label">Valeur d'achat</div><div class="value">{{ totaux.achat|money }}</div></div></div>
+  <div class="card stat"><div class="ic ic-green">🏷️</div><div><div class="label">Valeur de vente</div><div class="value">{{ totaux.vente|money }}</div></div></div>
+  <div class="card stat"><div class="ic ic-amber">📈</div><div><div class="label">Marge potentielle</div><div class="value">{{ totaux.marge|money }}</div></div></div>
+</div>
+
+<div class="card flush table-wrap">
+  <h3 style="padding:14px 12px 0;">💹 Marge par produit</h3>
+  <table>
+    <thead><tr><th>Produit</th><th class="num">Stock</th><th class="num">Valeur achat</th><th class="num">Valeur vente</th><th class="num">Marge</th></tr></thead>
+    <tbody>
+    {% for r in lignes %}
+    <tr><td>{{ r.nom }}</td><td class="num">{{ r.quantite }}</td><td class="num">{{ r.val_achat|money }}</td>
+        <td class="num">{{ r.val_vente|money }}</td><td class="num"><strong>{{ r.marge|money }}</strong></td></tr>
+    {% else %}<tr><td colspan="5" class="empty">Aucun produit.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if g.user.plan == 'pro' %}
+<div class="grid grid-2" style="margin-bottom:20px;">
+  <div class="card"><h3>🏆 Produits les plus vendus (30 j)</h3>
+    <table><tbody>
+    {% for r in top_produits %}<tr><td>{{ r.nom }}</td><td class="num">{{ r.qte }} u.</td><td class="num"><strong>{{ r.ca|money }}</strong></td></tr>
+    {% else %}<tr><td class="empty">Aucune vente sur la période.</td></tr>{% endfor %}
+    </tbody></table></div>
+  <div class="card"><h3>🧑‍🤝‍🧑 Meilleurs clients</h3>
+    <table><tbody>
+    {% for r in top_clients %}<tr><td>{{ r.nom }}</td><td class="num">{{ r.nb }} vente(s)</td><td class="num"><strong>{{ r.ca|money }}</strong></td></tr>
+    {% else %}<tr><td class="empty">Aucune vente avec client.</td></tr>{% endfor %}
+    </tbody></table></div>
+</div>
+{% else %}
+<div class="card lock"><div class="big">🔒</div><p><strong>Rapports de ventes (produits les plus vendus, meilleurs clients)</strong><br>
+  Disponibles avec le plan Pro. <a href="{{ url_for('abonnement.index') }}">Passer au Pro</a></p></div>
+{% endif %}
+
+<div class="grid grid-2">
+  <div class="card"><h3>⛔ En rupture de stock ({{ ruptures|length }})</h3>
+    {% for p in ruptures %}<p style="margin:6px 0;"><a href="{{ url_for('produits.detail', produit_id=p.id) }}">{{ p.nom }}</a></p>
+    {% else %}<p class="muted">Aucun produit en rupture ✅</p>{% endfor %}</div>
+  <div class="card"><h3>😴 Produits dormants ({{ dormants|length }})</h3>
+    <p class="muted">Aucun mouvement depuis 30 jours.</p>
+    {% for p in dormants %}<p style="margin:6px 0;"><a href="{{ url_for('produits.detail', produit_id=p.id) }}">{{ p.nom }}</a> <span class="muted">· stock {{ p.quantite }}</span></p>
+    {% else %}<p class="muted">Aucun produit dormant ✅</p>{% endfor %}</div>
+</div>
+{% endblock %}

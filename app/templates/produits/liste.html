@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager, stock_badge with context %}
+{% block title %}Produits · StockPro{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h2>Produits</h2><div class="sub">{{ page.total }} produit(s)</div></div>
+  <div class="actions">
+    {% if g.user.role == 'admin' %}<a class="btn" href="{{ url_for('import_csv.index') }}">⬆ Import CSV {% if g.user.plan != 'pro' %}<span class="badge pro">Pro</span>{% endif %}</a>{% endif %}
+    <a class="btn" href="{{ url_for('produits.export') }}">⬇ Export CSV {% if g.user.plan != 'pro' %}<span class="badge pro">Pro</span>{% endif %}</a>
+    <a class="btn btn-primary" href="{{ url_for('produits.ajouter') }}">+ Ajouter</a>
+  </div>
+</div>
+
+<form method="get" class="filters">
+  <input name="q" value="{{ q }}" placeholder="🔍 Rechercher (nom ou référence)...">
+  <select name="categorie">
+    <option value="">Toutes les catégories</option>
+    {% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if cat == c.id|string }}>{{ c.nom }}</option>{% endfor %}
+  </select>
+  <select name="tri">
+    <option value="nom" {{ 'selected' if tri == 'nom' }}>Tri: nom</option>
+    <option value="stock" {{ 'selected' if tri == 'stock' }}>Stock croissant</option>
+    <option value="stock_desc" {{ 'selected' if tri == 'stock_desc' }}>Stock décroissant</option>
+    <option value="prix" {{ 'selected' if tri == 'prix' }}>Prix de vente</option>
+    <option value="recent" {{ 'selected' if tri == 'recent' }}>Plus récents</option>
+  </select>
+  <label class="check"><input type="checkbox" name="alerte" value="1" {{ 'checked' if alerte }}> En alerte</label>
+  <button class="btn">Filtrer</button>
+  <a class="btn" href="{{ url_for('produits.liste') }}">Réinitialiser</a>
+</form>
+
+<div class="card flush table-wrap">
+<table>
+  <thead><tr><th>Produit</th><th>Catégorie</th><th>Fournisseur</th><th class="num">Achat</th><th class="num">Vente</th><th class="num">Stock</th><th></th></tr></thead>
+  <tbody>
+  {% for p in page.rows %}
+  <tr>
+    <td><a href="{{ url_for('produits.detail', produit_id=p.id) }}"><strong>{{ p.nom }}</strong></a>
+        {% if p.reference %}<div class="muted">{{ p.reference }}</div>{% endif %}</td>
+    <td>{{ p.categorie_nom or '-' }}</td>
+    <td>{{ p.fournisseur_nom or '-' }}</td>
+    <td class="num">{{ p.prix_achat|money }}</td>
+    <td class="num">{{ p.prix_vente|money }}</td>
+    <td class="num">{{ stock_badge(p) }}</td>
+    <td><div class="actions">
+      <a class="btn btn-sm" href="{{ url_for('produits.detail', produit_id=p.id) }}">Voir</a>
+      <a class="btn btn-sm" href="{{ url_for('produits.modifier', produit_id=p.id) }}">Modifier</a>
+      {% if g.user.role == 'admin' %}
+      <form class="inline" method="post" action="{{ url_for('produits.supprimer', produit_id=p.id) }}" data-confirm="Supprimer ce produit et son historique ?">{{ csrf_field() }}
+        <button class="btn btn-sm btn-danger">Supprimer</button></form>{% endif %}
+    </div></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="7" class="empty">Aucun produit trouvé. <a href="{{ url_for('produits.ajouter') }}">Ajouter le premier</a></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{{ pager(page) }}
+{% endblock %}

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}StockPro · Gestion de stock{% endblock %}</title>
+  <script>try { var t = localStorage.getItem("theme"); if (t) document.documentElement.setAttribute("data-theme", t); } catch (e) {}</script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+{% set bp = request.blueprint %}
+{% if g.user %}
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="{{ url_for('main.dashboard') }}" style="text-decoration:none;"><span class="logo">📦</span> StockPro</a>
+    <nav>
+      <div class="nav-title">Principal</div>
+      <a href="{{ url_for('main.dashboard') }}" class="{{ 'active' if request.endpoint == 'main.dashboard' }}"><span class="ico">📊</span> Dashboard</a>
+      <a href="{{ url_for('produits.liste') }}" class="{{ 'active' if bp in ('produits', 'import_csv') }}"><span class="ico">📦</span> Produits
+        {% if nb_alertes %}<span class="count">{{ nb_alertes }}</span>{% endif %}</a>
+      <a href="{{ url_for('mouvements.liste') }}" class="{{ 'active' if bp == 'mouvements' }}"><span class="ico">🔄</span> Mouvements</a>
+      <div class="nav-title">Ventes & achats</div>
+      <a href="{{ url_for('ventes.liste') }}" class="{{ 'active' if bp == 'ventes' }}"><span class="ico">🧾</span> Ventes</a>
+      <a href="{{ url_for('clients.liste') }}" class="{{ 'active' if bp == 'clients' }}"><span class="ico">🧑‍🤝‍🧑</span> Clients</a>
+      <a href="{{ url_for('commandes.liste') }}" class="{{ 'active' if bp == 'commandes' }}"><span class="ico">📥</span> Commandes</a>
+      <a href="{{ url_for('fournisseurs.liste') }}" class="{{ 'active' if bp == 'fournisseurs' }}"><span class="ico">🚚</span> Fournisseurs</a>
+      <div class="nav-title">Gestion</div>
+      <a href="{{ url_for('categories.liste') }}" class="{{ 'active' if bp == 'categories' }}"><span class="ico">🏷️</span> Catégories</a>
+      {% if g.user.role == 'admin' %}<a href="{{ url_for('inventaire.index') }}" class="{{ 'active' if bp == 'inventaire' }}"><span class="ico">📋</span> Inventaire</a>{% endif %}
+      <a href="{{ url_for('main.rapports') }}" class="{{ 'active' if request.endpoint == 'main.rapports' }}"><span class="ico">📈</span> Rapports</a>
+      <div class="nav-title">Compte</div>
+      {% if g.user.role == 'admin' %}
+      <a href="{{ url_for('auth.equipe') }}" class="{{ 'active' if request.endpoint == 'auth.equipe' }}"><span class="ico">👥</span> Équipe</a>
+      <a href="{{ url_for('journal.index') }}" class="{{ 'active' if bp == 'journal' }}"><span class="ico">🕘</span> Journal</a>
+      {% endif %}
+      <a href="{{ url_for('abonnement.index') }}" class="{{ 'active' if bp == 'abonnement' }}"><span class="ico">💳</span> Abonnement</a>
+      <a href="{{ url_for('auth.profil') }}" class="{{ 'active' if request.endpoint == 'auth.profil' }}"><span class="ico">⚙️</span> Profil</a>
+      <a href="{{ url_for('auth.logout') }}"><span class="ico">🚪</span> Déconnexion</a>
+    </nav>
+    <div class="user-card">
+      <div class="avatar">{{ g.user.nom[:1]|upper }}</div>
+      <div class="info"><strong>{{ g.user.nom }}</strong><span>{{ g.user.org_nom }} · {{ g.user.plan|upper }}</span></div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topline">
+      <button class="icon-btn menu-btn" id="menu-btn" title="Menu">☰</button>
+      <button class="icon-btn" id="theme-toggle" title="Thème clair / sombre">🌙</button>
+    </div>
+    <main class="content">
+{% else %}
+<header class="topbar">
+  <a class="brand" href="{{ url_for('main.index') }}" style="text-decoration:none;"><span class="logo">📦</span> StockPro</a>
+  <nav>
+    <button class="icon-btn" id="theme-toggle" title="Thème">🌙</button>
+    <a class="btn" href="{{ url_for('auth.login') }}">Connexion</a>
+    <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Inscription</a>
+  </nav>
+</header>
+<main class="public-content">
+{% endif %}
+  <div class="toasts">
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% for cat, m in msgs %}<div class="toast {{ cat }}"><span>{{ '✅' if cat == 'success' else ('⚠️' if cat == 'error' else 'ℹ️') }}</span><span>{{ m }}</span><button class="x" type="button">✕</button></div>{% endfor %}
+    {% endwith %}
+  </div>
+  {% block content %}{% endblock %}
+</main>
+{% if g.user %}</div></div>{% endif %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

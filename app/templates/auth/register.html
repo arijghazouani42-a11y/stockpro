@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Inscription · StockPro{% endblock %}
+{% block content %}
+<div class="auth-wrap"><div class="card auth-box">
+  <h2>Créer votre compte 🚀</h2>
+  <p class="sub">Gratuit, sans carte bancaire</p>
+  <form method="post">
+    {{ csrf_field() }}
+    <label>Votre nom</label><input name="nom" required autofocus>
+    <label>Nom de la société</label><input name="organisation" required>
+    <label>Email</label><input name="email" type="email" required>
+    <label>Mot de passe (6 caractères minimum)</label><input name="password" type="password" minlength="6" required>
+    <button class="btn btn-primary btn-lg" style="width:100%; justify-content:center;">Créer mon compte</button>
+  </form>
+  <p class="muted" style="text-align:center; margin-top:18px;">Déjà inscrit ? <a href="{{ url_for('auth.login') }}">Connexion</a></p>
+</div></div>
+{% endblock %}

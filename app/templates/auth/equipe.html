@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Équipe · StockPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Équipe</h2><div class="sub">Invitez vos employés à gérer le stock avec vous</div></div></div>
+<div class="card">
+  <h3>➕ Ajouter un membre</h3>
+  {% if g.user.plan == 'free' %}
+    <p class="muted">Plan Free: {{ MAX_EQUIPE_FREE }} utilisateur maximum. <a href="{{ url_for('abonnement.index') }}">Passez au Pro</a> pour inviter votre équipe.</p>
+  {% endif %}
+  <form method="post">{{ csrf_field() }}
+    <div class="form-row">
+      <div><label>Nom</label><input name="nom" required></div>
+      <div><label>Email</label><input name="email" type="email" required></div>
+      <div><label>Mot de passe</label><input name="password" type="password" minlength="6" required></div>
+      <div><label>Rôle</label><select name="role"><option value="employe">Employé</option><option value="admin">Administrateur</option></select></div>
+    </div>
+    <button class="btn btn-primary">Ajouter</button>
+    <span class="muted">Employé: peut gérer le stock, mais pas supprimer ni changer l'abonnement.</span>
+  </form>
+</div>
+<div class="card flush table-wrap">
+<table>
+  <thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Depuis</th><th></th></tr></thead>
+  <tbody>
+  {% for m in membres %}
+  <tr>
+    <td><strong>{{ m.nom }}</strong> {% if m.id == g.user.id %}<span class="badge">vous</span>{% endif %}</td>
+    <td>{{ m.email }}</td>
+    <td><span class="badge {{ m.role }}">{{ m.role }}</span></td>
+    <td>{{ m.cree_le|jour }}</td>
+    <td class="num">{% if m.id != g.user.id %}
+      <form class="inline" method="post" action="{{ url_for('auth.equipe_supprimer', user_id=m.id) }}" data-confirm="Supprimer ce membre ?">{{ csrf_field() }}
+        <button class="btn btn-sm btn-danger">Supprimer</button></form>{% endif %}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

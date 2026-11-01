@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Nouvelle commande · StockPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Nouvelle commande fournisseur</h2>
+  <div class="sub">{% if lignes_init %}Pré-remplie avec les produits en alerte (quantité = 2 × seuil − stock){% else %}Choisissez les produits à commander{% endif %}</div></div></div>
+{% if not produits_json %}
+<div class="card"><p class="muted">Ajoutez d'abord des produits. <a href="{{ url_for('produits.ajouter') }}">Ajouter un produit</a></p></div>
+{% else %}
+<form method="post" class="card">
+  {{ csrf_field() }}
+  <div class="form-row"><div><label>Fournisseur</label>
+    <select name="fournisseur_id"><option value="">-- Choisir --</option>
+      {% for f in fournisseurs %}<option value="{{ f.id }}">{{ f.nom }}</option>{% endfor %}</select></div></div>
+  <div class="ligne-head ligne-row" style="margin-bottom:6px;"><span>Produit</span><span>Quantité</span><span>Prix d'achat</span><span class="right">Sous-total</span><span></span></div>
+  <div id="lignes"></div>
+  <button type="button" class="btn btn-sm" id="ajouter-ligne">+ Ajouter une ligne</button>
+  <div class="total-box"><span>Total</span><strong id="total">0.00 DT</strong></div>
+  <button class="btn btn-primary" name="action" value="brouillon">Enregistrer en brouillon</button>
+  <button class="btn" name="action" value="envoyer">Enregistrer et marquer envoyée</button>
+  <a class="btn" href="{{ url_for('commandes.liste') }}">Annuler</a>
+</form>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>window.PRODUITS = {{ produits_json|tojson }}; window.LIGNES_INIT = {{ lignes_init|tojson }};</script>
+<script src="{{ url_for('static', filename='js/lignes.js') }}"></script>
+{% endblock %}

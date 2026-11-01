@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Clients · StockPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Clients</h2><div class="sub">Associez vos ventes à vos clients</div></div></div>
+<div class="card">
+  <h3>➕ Nouveau client</h3>
+  <form method="post">
+    {{ csrf_field() }}
+    <div class="form-row">
+      <div><label>Nom</label><input name="nom" required></div>
+      <div><label>Téléphone</label><input name="telephone"></div>
+      <div><label>Email</label><input name="email" type="email"></div>
+    </div>
+    <label>Adresse</label><input name="adresse">
+    <button class="btn btn-primary">Ajouter</button>
+  </form>
+</div>
+<div class="card flush table-wrap">
+<table>
+  <thead><tr><th>Nom</th><th>Téléphone</th><th>Email</th><th class="num">Ventes</th><th class="num">Total</th><th></th></tr></thead>
+  <tbody>
+  {% for c in clients %}
+  <tr><td><strong>{{ c.nom }}</strong></td><td>{{ c.telephone or '-' }}</td><td>{{ c.email or '-' }}</td>
+      <td class="num">{{ c.nb }}</td><td class="num">{{ c.ca|money }}</td>
+      <td><div class="actions">
+        <a class="btn btn-sm" href="{{ url_for('clients.modifier', c_id=c.id) }}">Modifier</a>
+        {% if g.user.role == 'admin' %}
+        <form class="inline" method="post" action="{{ url_for('clients.supprimer', c_id=c.id) }}" data-confirm="Supprimer ce client ?">{{ csrf_field() }}
+          <button class="btn btn-sm btn-danger">Supprimer</button></form>{% endif %}
+      </div></td></tr>
+  {% else %}<tr><td colspan="6" class="empty">Aucun client.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

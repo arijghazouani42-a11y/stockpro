@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Modifier' if p else 'Nouveau' }} produit · StockPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>{{ 'Modifier le produit' if p else 'Nouveau produit' }}</h2></div></div>
+<div class="card" style="max-width:780px;">
+<form method="post">
+  {{ csrf_field() }}
+  <div class="form-row">
+    <div><label>Nom</label><input name="nom" value="{{ p.nom if p }}" required autofocus></div>
+    <div><label>Référence</label><input name="reference" value="{{ p.reference if p and p.reference }}"></div>
+  </div>
+  <div class="form-row">
+    <div><label>Catégorie</label>
+      <select name="categorie_id"><option value="">-- Aucune --</option>
+        {% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if p and p.categorie_id == c.id }}>{{ c.nom }}</option>{% endfor %}
+      </select></div>
+    <div><label>Fournisseur</label>
+      <select name="fournisseur_id"><option value="">-- Aucun --</option>
+        {% for f in fournisseurs %}<option value="{{ f.id }}" {{ 'selected' if p and p.fournisseur_id == f.id }}>{{ f.nom }}</option>{% endfor %}
+      </select></div>
+  </div>
+  {% if not categories %}<p class="muted">💡 Créez d'abord vos <a href="{{ url_for('categories.liste') }}">catégories</a> et <a href="{{ url_for('fournisseurs.liste') }}">fournisseurs</a>.</p>{% endif %}
+  <div class="form-row">
+    <div><label>Prix d'achat (DT)</label><input name="prix_achat" type="number" step="0.01" min="0" value="{{ p.prix_achat if p else 0 }}"></div>
+    <div><label>Prix de vente (DT)</label><input name="prix_vente" type="number" step="0.01" min="0" value="{{ p.prix_vente if p else 0 }}"></div>
+  </div>
+  <div class="form-row">
+    {% if not p %}<div><label>Quantité initiale</label><input name="quantite" type="number" min="0" value="0"></div>{% endif %}
+    <div><label>Seuil d'alerte</label><input name="seuil_alerte" type="number" min="0" value="{{ p.seuil_alerte if p else 5 }}"></div>
+  </div>
+  <button class="btn btn-primary">Enregistrer</button>
+  <a class="btn" href="{{ url_for('produits.liste') }}">Annuler</a>
+  {% if p %}<p class="muted" style="margin-top:14px;">Pour changer la quantité, enregistrez un mouvement (entrée / sortie).</p>{% endif %}
+</form>
+</div>
+{% endblock %}

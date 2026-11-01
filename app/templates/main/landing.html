@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Gérez votre stock.<br>Simplement. En ligne.</h1>
+  <p>StockPro aide les commerçants et les PME à suivre leurs produits, leurs entrées et sorties,
+     et à être alertés avant la rupture. Aucune installation.</p>
+  <div class="cta">
+    <a class="btn btn-white btn-lg" href="{{ url_for('auth.register') }}">Commencer gratuitement</a>
+    <a class="btn btn-outline-white btn-lg" href="#tarifs">Voir les tarifs</a>
+  </div>
+</section>
+
+<div class="section-title"><h2>Tout ce qu'il faut pour piloter votre stock</h2></div>
+<section class="grid grid-3">
+  <div class="card feature"><span class="emoji">📦</span><h3>Produits & catégories</h3><p>Fiches complètes avec prix, référence, catégorie et fournisseur.</p></div>
+  <div class="card feature"><span class="emoji">🔄</span><h3>Entrées & sorties</h3><p>Chaque mouvement est tracé: qui, quand, combien. Le stock ne peut jamais être négatif.</p></div>
+  <div class="card feature"><span class="emoji">🔔</span><h3>Alertes de rupture</h3><p>Soyez prévenu dès qu'un produit passe sous son seuil.</p></div>
+  <div class="card feature"><span class="emoji">📊</span><h3>Dashboard & rapports</h3><p>Graphiques, valeur du stock, marges et produits dormants.</p></div>
+  <div class="card feature"><span class="emoji">👥</span><h3>Travail en équipe</h3><p>Invitez vos employés avec des rôles administrateur ou employé.</p></div>
+  <div class="card feature"><span class="emoji">🧾</span><h3>Ventes & factures</h3><p>Créez des factures imprimables: le stock se met à jour tout seul.</p></div>
+  <div class="card feature"><span class="emoji">📥</span><h3>Commandes fournisseurs</h3><p>Bons de commande en un clic pour les produits en alerte, réception = entrée de stock.</p></div>
+  <div class="card feature"><span class="emoji">📋</span><h3>Inventaire & import</h3><p>Comptez vos produits, corrigez les écarts, importez vos données depuis Excel (CSV).</p></div>
+  <div class="card feature"><span class="emoji">🔒</span><h3>Données isolées</h3><p>Chaque société voit uniquement ses propres données, stockées sur Supabase.</p></div>
+</section>
+
+<div class="section-title"><h2>Comment ça marche</h2></div>
+<section class="grid grid-3">
+  <div class="step"><div class="n">1</div><h3>Créez votre compte</h3><p>Inscription en 30 secondes avec le nom de votre société.</p></div>
+  <div class="step"><div class="n">2</div><h3>Ajoutez vos produits</h3><p>Saisissez-les un par un avec quantité et seuil d'alerte.</p></div>
+  <div class="step"><div class="n">3</div><h3>Suivez votre stock</h3><p>Enregistrez les mouvements et consultez le dashboard.</p></div>
+</section>
+
+<div class="section-title" id="tarifs"><h2>Tarifs simples</h2></div>
+<section class="grid grid-2" style="max-width:780px; margin:0 auto;">
+  <div class="card pricing-card">
+    <h3>Free</h3>
+    <div class="price">0 DT <small>/ mois</small></div>
+    <ul class="check-list">
+      <li>Jusqu'à {{ LIMITE_FREE }} produits</li><li>1 utilisateur</li><li>Dashboard et alertes</li>
+      <li>Ventes, factures et clients</li><li>Commandes fournisseurs</li><li class="no">Import / Export CSV</li><li class="no">Équipe + journal d'activité</li>
+    </ul>
+    <a class="btn" href="{{ url_for('auth.register') }}">Choisir Free</a>
+  </div>
+  <div class="card pricing-card featured">
+    <span class="ribbon">Populaire</span>
+    <h3>Pro</h3>
+    <div class="price">29 DT <small>/ mois</small></div>
+    <ul class="check-list">
+      <li>Produits illimités</li><li>Utilisateurs illimités</li><li>Dashboard et alertes</li>
+      <li>Ventes, factures et clients</li><li>Commandes fournisseurs</li><li>Import / Export CSV</li><li>Équipe + journal d'activité</li><li>Rapports de ventes avancés</li>
+    </ul>
+    <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Choisir Pro</a>
+  </div>
+</section>
+
+<div class="section-title"><h2>Questions fréquentes</h2></div>
+<section class="faq" style="max-width:760px; margin:0 auto;">
+  <details><summary>Mes données sont-elles privées ?</summary><p>Oui. Chaque société est isolée: chaque requête est filtrée par organisation.</p></details>
+  <details><summary>Puis-je changer de plan à tout moment ?</summary><p>Oui, depuis la page Abonnement. Le paiement est simulé dans cette démo.</p></details>
+  <details><summary>Où sont stockées les données ?</summary><p>Dans une base PostgreSQL hébergée sur Supabase.</p></details>
+</section>
+<div class="footer">© {{ annee }} StockPro · Projet SaaS de gestion de stock</div>
+{% endblock %}

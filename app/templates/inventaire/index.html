@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Inventaire · StockPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Inventaire physique</h2>
+  <div class="sub">Saisissez les quantités comptées. Seuls les écarts sont enregistrés (sous forme d'ajustements tracés).</div></div></div>
+<form method="get" class="filters"><input name="q" value="{{ q }}" placeholder="🔍 Filtrer par nom..."><button class="btn">Filtrer</button></form>
+<form method="post">
+  {{ csrf_field() }}
+  <div class="card flush table-wrap">
+  <table>
+    <thead><tr><th>Produit</th><th class="num">Stock système</th><th class="num" style="width:180px;">Quantité comptée</th></tr></thead>
+    <tbody>
+    {% for p in produits %}
+    <tr><td><strong>{{ p.nom }}</strong>{% if p.reference %} <span class="muted">{{ p.reference }}</span>{% endif %}</td>
+        <td class="num">{{ p.quantite }}</td>
+        <td class="num"><input name="compte_{{ p.id }}" type="number" min="0" placeholder="{{ p.quantite }}" style="margin:0; text-align:right;"></td></tr>
+    {% else %}<tr><td colspan="3" class="empty">Aucun produit.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if produits %}<button class="btn btn-primary btn-lg">Enregistrer l'inventaire</button>{% endif %}
+</form>
+{% endblock %}

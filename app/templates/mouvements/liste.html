@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager, type_mv with context %}
+{% block title %}Mouvements · StockPro{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h2>Mouvements de stock</h2><div class="sub">Entrées et sorties, tracées par utilisateur</div></div>
+  <a class="btn" href="{{ url_for('mouvements.export') }}">⬇ Export CSV {% if g.user.plan != 'pro' %}<span class="badge pro">Pro</span>{% endif %}</a>
+</div>
+
+<div class="card">
+  <h3>➕ Nouveau mouvement</h3>
+  {% if produits %}
+  <form method="post" action="{{ url_for('mouvements.creer') }}">
+    {{ csrf_field() }}
+    <div class="form-row">
+      <div><label>Produit</label>
+        <select name="produit_id" required>
+          {% for p in produits %}<option value="{{ p.id }}" {{ 'selected' if filtre_produit == p.id|string }}>{{ p.nom }} (stock: {{ p.quantite }})</option>{% endfor %}
+        </select></div>
+      <div><label>Type</label><select name="type"><option value="entree">▲ Entrée (réception)</option><option value="sortie">▼ Sortie (vente)</option></select></div>
+      <div><label>Quantité</label><input name="quantite" type="number" min="1" required></div>
+    </div>
+    <label>Note (optionnel)</label><input name="note">
+    <button class="btn btn-primary">Enregistrer</button>
+  </form>
+  {% else %}<p class="muted">Ajoutez d'abord un produit. <a href="{{ url_for('produits.ajouter') }}">Ajouter un produit</a></p>{% endif %}
+</div>
+
+<form method="get" class="filters">
+  <select name="produit"><option value="">Tous les produits</option>
+    {% for p in produits %}<option value="{{ p.id }}" {{ 'selected' if filtre_produit == p.id|string }}>{{ p.nom }}</option>{% endfor %}</select>
+  <select name="type"><option value="">Entrées et sorties</option>
+    <option value="entree" {{ 'selected' if filtre_type == 'entree' }}>Entrées</option>
+    <option value="sortie" {{ 'selected' if filtre_type == 'sortie' }}>Sorties</option></select>
+  <button class="btn">Filtrer</button>
+  <a class="btn" href="{{ url_for('mouvements.liste') }}">Réinitialiser</a>
+</form>
+
+<div class="card flush table-wrap">
+<table>
+  <thead><tr><th>Date</th><th>Produit</th><th>Type</th><th class="num">Qté</th><th>Utilisateur</th><th>Note</th></tr></thead>
+  <tbody>
+  {% for m in page.rows %}
+  <tr><td>{{ m.cree_le|dt }}</td><td>{{ m.produit_nom }}</td><td>{{ type_mv(m.type) }}</td>
+      <td class="num">{{ m.quantite }}</td><td>{{ m.user_nom or '-' }}</td><td>{{ m.note or '' }}</td></tr>
+  {% else %}<tr><td colspan="6" class="empty">Aucun mouvement.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{{ pager(page) }}
+{% endblock %}

@@ -1,0 +1,4 @@
+.env
+stock.db
+__pycache__/
+venv/

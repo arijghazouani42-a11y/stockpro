@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Modifier fournisseur · StockPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Modifier le fournisseur</h2></div></div>
+<div class="card" style="max-width:620px;">
+  <form method="post">
+    {{ csrf_field() }}
+    <label>Nom</label><input name="nom" value="{{ f.nom }}" required>
+    <label>Téléphone</label><input name="telephone" value="{{ f.telephone or '' }}">
+    <label>Email</label><input name="email" type="email" value="{{ f.email or '' }}">
+    <button class="btn btn-primary">Enregistrer</button>
+    <a class="btn" href="{{ url_for('fournisseurs.liste') }}">Annuler</a>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Modifier client · StockPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Modifier le client</h2></div></div>
+<div class="card" style="max-width:620px;">
+  <form method="post">
+    {{ csrf_field() }}
+    <label>Nom</label><input name="nom" value="{{ c.nom }}" required>
+    <label>Téléphone</label><input name="telephone" value="{{ c.telephone or '' }}">
+    <label>Email</label><input name="email" type="email" value="{{ c.email or '' }}">
+    <label>Adresse</label><input name="adresse" value="{{ c.adresse or '' }}">
+    <button class="btn btn-primary">Enregistrer</button>
+    <a class="btn" href="{{ url_for('clients.liste') }}">Annuler</a>
+  </form>
+</div>
+{% endblock %}

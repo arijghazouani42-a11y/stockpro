@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Catégories · StockPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Catégories</h2><div class="sub">Organisez vos produits</div></div></div>
+<div class="card">
+  <form method="post" class="filters" style="margin:0;">
+    {{ csrf_field() }}
+    <input name="nom" placeholder="Nouvelle catégorie (ex: Boissons)" required>
+    <button class="btn btn-primary">+ Ajouter</button>
+  </form>
+</div>
+<div class="card flush table-wrap">
+<table>
+  <thead><tr><th>Nom</th><th class="num">Produits</th><th></th></tr></thead>
+  <tbody>
+  {% for c in categories %}
+  <tr>
+    <td><strong>{{ c.nom }}</strong></td>
+    <td class="num"><a href="{{ url_for('produits.liste', categorie=c.id) }}">{{ c.nb }}</a></td>
+    <td class="num">{% if g.user.role == 'admin' %}
+      <form class="inline" method="post" action="{{ url_for('categories.supprimer', cat_id=c.id) }}" data-confirm="Supprimer cette catégorie ?">{{ csrf_field() }}
+        <button class="btn btn-sm btn-danger">Supprimer</button></form>{% endif %}</td>
+  </tr>
+  {% else %}<tr><td colspan="3" class="empty">Aucune catégorie.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

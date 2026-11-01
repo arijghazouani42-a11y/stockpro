@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% from "_macros.html" import type_mv with context %}
+{% block title %}Dashboard · StockPro{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h2>Bonjour {{ g.user.nom.split(' ')[0] }} 👋</h2><div class="sub">Voici l'état de votre stock aujourd'hui</div></div>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('mouvements.liste') }}">🔄 Mouvement</a>
+    <a class="btn" href="{{ url_for('ventes.nouvelle') }}">🧾 Nouvelle vente</a>
+    <a class="btn btn-primary" href="{{ url_for('produits.ajouter') }}">+ Nouveau produit</a>
+  </div>
+</div>
+
+<div class="grid grid-4" style="margin-bottom:20px;">
+  <div class="card stat"><div class="ic ic-indigo">📦</div><div>
+    <div class="label">Produits</div>
+    <div class="value">{{ nb_produits }}{% if g.user.plan == 'free' %}<span class="sub"> / {{ LIMITE_FREE }}</span>{% endif %}</div></div></div>
+  <div class="card stat"><div class="ic ic-green">💰</div><div>
+    <div class="label">Valeur du stock</div>
+    <div class="value">{{ valeur_achat|money }}</div>
+    <div class="sub">À la vente: {{ valeur_vente|money }}</div></div></div>
+  <div class="card stat"><div class="ic ic-red">🔔</div><div>
+    <div class="label">Produits en alerte</div>
+    <div class="value">{{ en_alerte|length }}</div></div></div>
+  <div class="card stat"><div class="ic ic-teal">🔄</div><div>
+    <div class="label">Mouvements (30 j)</div>
+    <div class="value"><span class="mv-in">+{{ stats.entree }}</span> <span class="muted">/</span> <span class="mv-out">-{{ stats.sortie }}</span></div>
+    <div class="sub">entrées / sorties</div></div></div>
+  <a class="card stat stat-link" href="{{ url_for('ventes.liste') }}"><div class="ic ic-green">🧾</div><div>
+    <div class="label">Chiffre d'affaires (30 j)</div>
+    <div class="value">{{ ca30|money }}</div></div></a>
+  <a class="card stat stat-link" href="{{ url_for('ventes.liste', statut='impayee') }}"><div class="ic ic-amber">⏳</div><div>
+    <div class="label">Ventes impayées</div>
+    <div class="value">{{ impayes.montant|money }}</div>
+    <div class="sub">{{ impayes.n }} facture(s)</div></div></a>
+  <a class="card stat stat-link" href="{{ url_for('commandes.liste') }}"><div class="ic ic-indigo">📥</div><div>
+    <div class="label">Commandes en attente</div>
+    <div class="value">{{ commandes_attente }}</div>
+    <div class="sub">à réceptionner</div></div></a>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:20px;">
+  <div class="card"><h3>📈 Mouvements des 7 derniers jours</h3>
+    <div class="chart-box"><canvas id="chartJours"></canvas></div></div>
+  <div class="card"><h3>🥧 Valeur du stock par catégorie</h3>
+    {% if chart_cat.labels %}<div class="chart-box"><canvas id="chartCat"></canvas></div>
+    {% else %}<p class="muted">Ajoutez des produits (avec prix et quantité) pour voir la répartition.</p>{% endif %}</div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:20px;">
+  <div class="card">
+    <h3>📊 Stock par produit</h3>
+    {% for p in top %}
+    <div class="bar-row">
+      <a class="bar-label" href="{{ url_for('produits.detail', produit_id=p.id) }}" title="{{ p.nom }}">{{ p.nom }}</a>
+      <div class="bar"><div class="bar-fill {{ 'low' if p.quantite <= p.seuil_alerte }}" style="width: {{ (p.quantite / max_q * 100)|round|int }}%"></div></div>
+      <span>{{ p.quantite }}</span>
+    </div>
+    {% else %}<p class="muted">Aucun produit pour l'instant.</p>{% endfor %}
+    {% if top %}<p class="muted">En rouge: produit sous son seuil d'alerte.</p>{% endif %}
+  </div>
+  <div class="card">
+    <h3>🔔 À réapprovisionner</h3>
+    {% if en_alerte %}<p><a class="btn btn-sm btn-primary" href="{{ url_for('commandes.nouvelle', alertes=1) }}">📥 Commander tout automatiquement</a></p>{% endif %}
+    {% if en_alerte %}
+    <table><tbody>
+      {% for p in en_alerte[:6] %}
+      <tr><td><a href="{{ url_for('produits.detail', produit_id=p.id) }}">{{ p.nom }}</a></td>
+          <td class="num"><span class="badge danger">{{ p.quantite }} / seuil {{ p.seuil_alerte }}</span></td>
+          <td class="num"><a class="btn btn-sm" href="{{ url_for('mouvements.liste', produit=p.id) }}">+ Entrée</a></td></tr>
+      {% endfor %}
+    </tbody></table>
+    {% else %}<p class="muted">Aucune alerte, tout va bien ✅</p>{% endif %}
+  </div>
+</div>
+
+<div class="card flush table-wrap">
+  <h3 style="padding:14px 12px 0;">🕒 Derniers mouvements</h3>
+  <table>
+    <thead><tr><th>Date</th><th>Produit</th><th>Type</th><th class="num">Qté</th><th>Par</th></tr></thead>
+    <tbody>
+    {% for m in derniers %}
+    <tr><td>{{ m.cree_le|dt }}</td><td>{{ m.produit_nom }}</td><td>{{ type_mv(m.type) }}</td>
+        <td class="num">{{ m.quantite }}</td><td>{{ m.user_nom or '-' }}</td></tr>
+    {% else %}<tr><td colspan="5" class="empty">Aucun mouvement.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  if (typeof Chart === "undefined") return;
+  var jours = {{ chart_jours|tojson }}, cat = {{ chart_cat|tojson }};
+  var charts = [];
+  function couleurTexte() { return getComputedStyle(document.documentElement).getPropertyValue("--muted").trim() || "#6b7280"; }
+  function dessiner() {
+    charts.forEach(function (c) { c.destroy(); }); charts = [];
+    Chart.defaults.color = couleurTexte();
+    Chart.defaults.font.family = "Inter, Segoe UI, system-ui, sans-serif";
+    var c1 = document.getElementById("chartJours");
+    if (c1) charts.push(new Chart(c1, {
+      type: "bar",
+      data: { labels: jours.labels, datasets: [
+        { label: "Entrées", data: jours.entrees, backgroundColor: "#22c55e", borderRadius: 6 },
+        { label: "Sorties", data: jours.sorties, backgroundColor: "#ef4444", borderRadius: 6 } ] },
+      options: { responsive: true, maintainAspectRatio: false,
+                 scales: { y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "rgba(148,163,184,.2)" } },
+                           x: { grid: { display: false } } },
+                 plugins: { legend: { position: "bottom" } } }
+    }));
+    var c2 = document.getElementById("chartCat");
+    if (c2) charts.push(new Chart(c2, {
+      type: "doughnut",
+      data: { labels: cat.labels, datasets: [{ data: cat.valeurs, borderWidth: 0,
+              backgroundColor: ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#3b82f6","#ef4444","#84cc16"] }] },
+      options: { responsive: true, maintainAspectRatio: false, cutout: "62%",
+                 plugins: { legend: { position: "bottom" } } }
+    }));
+  }
+  window.rafraichirCharts = dessiner;
+  dessiner();
+})();
+</script>
+{% endblock %}

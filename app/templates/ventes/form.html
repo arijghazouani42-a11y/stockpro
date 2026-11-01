@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Nouvelle vente · StockPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Nouvelle vente</h2><div class="sub">Sélectionnez les produits vendus: le stock sera diminué à l'enregistrement</div></div></div>
+{% if not produits_json %}
+<div class="card"><p class="muted">Ajoutez d'abord des produits. <a href="{{ url_for('produits.ajouter') }}">Ajouter un produit</a></p></div>
+{% else %}
+<form method="post" class="card">
+  {{ csrf_field() }}
+  <div class="form-row">
+    <div><label>Client (optionnel)</label>
+      <select name="client_id"><option value="">Client comptoir</option>
+        {% for c in clients %}<option value="{{ c.id }}">{{ c.nom }}</option>{% endfor %}</select></div>
+    <div><label>Paiement</label>
+      <select name="statut"><option value="payee">Payée</option><option value="impayee">Impayée (à crédit)</option></select></div>
+  </div>
+  <div class="ligne-head ligne-row" style="margin-bottom:6px;"><span>Produit</span><span>Quantité</span><span>Prix unitaire</span><span class="right">Sous-total</span><span></span></div>
+  <div id="lignes"></div>
+  <button type="button" class="btn btn-sm" id="ajouter-ligne">+ Ajouter une ligne</button>
+  <div class="total-box"><span>Total</span><strong id="total">0.00 DT</strong></div>
+  <button class="btn btn-primary btn-lg">Enregistrer la vente</button>
+  <a class="btn btn-lg" href="{{ url_for('ventes.liste') }}">Annuler</a>
+</form>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>window.PRODUITS = {{ produits_json|tojson }};</script>
+<script src="{{ url_for('static', filename='js/lignes.js') }}"></script>
+{% endblock %}

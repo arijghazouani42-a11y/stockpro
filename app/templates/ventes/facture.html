@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_macros.html" import statut_badge with context %}
+{% block title %}FAC-{{ '%04d'|format(v.numero) }} · StockPro{% endblock %}
+{% block content %}
+<div class="page-head no-print">
+  <div><h2>Facture FAC-{{ '%04d'|format(v.numero) }}</h2><div class="sub">{{ statut_badge(v.statut) }}</div></div>
+  <div class="actions">
+    <button class="btn" onclick="window.print()">🖨️ Imprimer / PDF</button>
+    {% if v.statut == 'impayee' %}
+    <form class="inline" method="post" action="{{ url_for('ventes.payer', vente_id=v.id) }}">{{ csrf_field() }}<button class="btn btn-primary">✅ Marquer payée</button></form>{% endif %}
+    {% if v.statut != 'annulee' and g.user.role == 'admin' %}
+    <form class="inline" method="post" action="{{ url_for('ventes.annuler', vente_id=v.id) }}" data-confirm="Annuler cette vente ? Le stock sera remis.">{{ csrf_field() }}<button class="btn btn-danger">Annuler la vente</button></form>{% endif %}
+    <a class="btn" href="{{ url_for('ventes.liste') }}">← Retour</a>
+  </div>
+</div>
+
+<div class="card facture">
+  <div class="facture-head">
+    <div><h3>📦 {{ g.user.org_nom }}</h3><div class="muted">Facture FAC-{{ '%04d'|format(v.numero) }}<br>Date: {{ v.cree_le|dt }}<br>Émise par: {{ v.user_nom or '-' }}</div></div>
+    <div><h3>Client</h3><div>{{ v.client_nom or 'Client comptoir' }}</div>
+      <div class="muted">{{ v.client_tel or '' }}{% if v.client_tel and v.client_email %} · {% endif %}{{ v.client_email or '' }}<br>{{ v.client_adresse or '' }}</div></div>
+  </div>
+  <table>
+    <thead><tr><th>Produit</th><th class="num">Quantité</th><th class="num">Prix unitaire</th><th class="num">Total</th></tr></thead>
+    <tbody>
+    {% for l in lignes %}
+    <tr><td>{{ l.produit_nom }}{% if l.reference %} <span class="muted">({{ l.reference }})</span>{% endif %}</td><td class="num">{{ l.quantite }}</td>
+        <td class="num">{{ l.prix_unitaire|money }}</td><td class="num">{{ (l.quantite * l.prix_unitaire)|money }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <div class="total-box"><span>Total à payer</span><strong>{{ v.total|money }}</strong></div>
+  <p class="muted">Statut: {{ statut_badge(v.statut) }} · Merci pour votre confiance.</p>
+</div>
+{% endblock %}

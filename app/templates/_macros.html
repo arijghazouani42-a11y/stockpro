@@ -1,0 +1,15 @@
+{% macro pager(p) %}
+{% if p.pages > 1 %}
+<div class="pager">
+  {% if p.page > 1 %}<a class="btn btn-sm" href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), page=p.page - 1)) }}">← Précédent</a>{% endif %}
+  <span>Page {{ p.page }} / {{ p.pages }} · {{ p.total }} résultats</span>
+  {% if p.page < p.pages %}<a class="btn btn-sm" href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), page=p.page + 1)) }}">Suivant →</a>{% endif %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro type_mv(t) %}{% if t == 'entree' %}<span class="mv-in">▲ Entrée</span>{% else %}<span class="mv-out">▼ Sortie</span>{% endif %}{% endmacro %}
+
+{% macro stock_badge(p) %}{% if p.quantite <= p.seuil_alerte %}<span class="badge danger">{{ p.quantite }}</span>{% else %}<span class="badge ok">{{ p.quantite }}</span>{% endif %}{% endmacro %}
+
+{% macro statut_badge(s) %}{% set cfg = {'payee': ('ok','Payée'), 'impayee': ('warn','Impayée'), 'annulee': ('danger','Annulée'), 'brouillon': ('gray','Brouillon'), 'envoyee': ('info','Envoyée'), 'recue': ('ok','Reçue')} %}<span class="badge {{ cfg[s][0] }}">{{ cfg[s][1] }}</span>{% endmacro %}

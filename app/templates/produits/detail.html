@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "_macros.html" import type_mv, stock_badge with context %}
+{% block title %}{{ p.nom }} · StockPro{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h2>{{ p.nom }}</h2><div class="sub">{{ p.reference or 'Sans référence' }} · {{ p.categorie_nom or 'Sans catégorie' }}</div></div>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('produits.modifier', produit_id=p.id) }}">✏️ Modifier</a>
+    <a class="btn" href="{{ url_for('produits.liste') }}">← Retour</a>
+  </div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:20px;">
+  <div class="card">
+    <h3>📋 Informations</h3>
+    <dl class="kv">
+      <dt>Stock actuel</dt><dd>{{ stock_badge(p) }} <span class="muted">seuil d'alerte: {{ p.seuil_alerte }}</span></dd>
+      <dt>Prix d'achat</dt><dd>{{ p.prix_achat|money }}</dd>
+      <dt>Prix de vente</dt><dd>{{ p.prix_vente|money }}</dd>
+      <dt>Marge unitaire</dt><dd>{{ (p.prix_vente - p.prix_achat)|money }}</dd>
+      <dt>Valeur en stock</dt><dd>{{ (p.quantite * p.prix_achat)|money }}</dd>
+      <dt>Fournisseur</dt><dd>{{ p.fournisseur_nom or '-' }}</dd>
+    </dl>
+  </div>
+  <div class="card">
+    <h3>🔄 Mouvement rapide</h3>
+    <form method="post" action="{{ url_for('mouvements.creer') }}">
+      {{ csrf_field() }}
+      <input type="hidden" name="produit_id" value="{{ p.id }}">
+      <input type="hidden" name="next" value="{{ url_for('produits.detail', produit_id=p.id) }}">
+      <div class="form-row">
+        <div><label>Type</label><select name="type"><option value="entree">Entrée</option><option value="sortie">Sortie</option></select></div>
+        <div><label>Quantité</label><input name="quantite" type="number" min="1" required></div>
+      </div>
+      <label>Note</label><input name="note" placeholder="Optionnel">
+      <button class="btn btn-primary">Enregistrer</button>
+    </form>
+  </div>
+</div>
+
+<div class="card flush table-wrap">
+  <h3 style="padding:14px 12px 0;">🕒 Historique (15 derniers)</h3>
+  <table>
+    <thead><tr><th>Date</th><th>Type</th><th class="num">Qté</th><th>Par</th><th>Note</th></tr></thead>
+    <tbody>
+    {% for m in historique %}
+    <tr><td>{{ m.cree_le|dt }}</td><td>{{ type_mv(m.type) }}</td><td class="num">{{ m.quantite }}</td>
+        <td>{{ m.user_nom or '-' }}</td><td>{{ m.note or '' }}</td></tr>
+    {% else %}<tr><td colspan="5" class="empty">Aucun mouvement.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

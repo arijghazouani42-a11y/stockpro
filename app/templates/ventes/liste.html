@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager, statut_badge with context %}
+{% block title %}Ventes · StockPro{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h2>Ventes & factures</h2><div class="sub">Chaque vente met à jour le stock automatiquement</div></div>
+  <a class="btn btn-primary" href="{{ url_for('ventes.nouvelle') }}">+ Nouvelle vente</a>
+</div>
+<div class="grid grid-2" style="margin-bottom:20px;">
+  <div class="card stat"><div class="ic ic-green">✅</div><div><div class="label">Encaissé</div><div class="value">{{ totaux.payees|money }}</div></div></div>
+  <div class="card stat"><div class="ic ic-amber">⏳</div><div><div class="label">À encaisser (impayées)</div><div class="value">{{ totaux.impayees|money }}</div></div></div>
+</div>
+<form method="get" class="filters">
+  <select name="statut"><option value="">Tous les statuts</option>
+    <option value="payee" {{ 'selected' if statut == 'payee' }}>Payées</option>
+    <option value="impayee" {{ 'selected' if statut == 'impayee' }}>Impayées</option>
+    <option value="annulee" {{ 'selected' if statut == 'annulee' }}>Annulées</option></select>
+  <button class="btn">Filtrer</button><a class="btn" href="{{ url_for('ventes.liste') }}">Réinitialiser</a>
+</form>
+<div class="card flush table-wrap">
+<table>
+  <thead><tr><th>N°</th><th>Date</th><th>Client</th><th>Statut</th><th class="num">Total</th><th></th></tr></thead>
+  <tbody>
+  {% for v in page.rows %}
+  <tr><td><strong>FAC-{{ '%04d'|format(v.numero) }}</strong></td><td>{{ v.cree_le|dt }}</td><td>{{ v.client_nom or 'Client comptoir' }}</td>
+      <td>{{ statut_badge(v.statut) }}</td><td class="num"><strong>{{ v.total|money }}</strong></td>
+      <td class="num"><a class="btn btn-sm" href="{{ url_for('ventes.detail', vente_id=v.id) }}">Voir</a></td></tr>
+  {% else %}<tr><td colspan="6" class="empty">Aucune vente. <a href="{{ url_for('ventes.nouvelle') }}">Créer la première</a></td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{{ pager(page) }}
+{% endblock %}

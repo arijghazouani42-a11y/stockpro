@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Fournisseurs · StockPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Fournisseurs</h2><div class="sub">Vos partenaires d'approvisionnement</div></div></div>
+<div class="card">
+  <h3>➕ Nouveau fournisseur</h3>
+  <form method="post">
+    {{ csrf_field() }}
+    <div class="form-row">
+      <div><label>Nom</label><input name="nom" required></div>
+      <div><label>Téléphone</label><input name="telephone"></div>
+      <div><label>Email</label><input name="email" type="email"></div>
+    </div>
+    <button class="btn btn-primary">Ajouter</button>
+  </form>
+</div>
+<div class="card flush table-wrap">
+<table>
+  <thead><tr><th>Nom</th><th>Téléphone</th><th>Email</th><th class="num">Produits</th><th></th></tr></thead>
+  <tbody>
+  {% for f in fournisseurs %}
+  <tr>
+    <td><strong>{{ f.nom }}</strong></td><td>{{ f.telephone or '-' }}</td><td>{{ f.email or '-' }}</td><td class="num">{{ f.nb }}</td>
+    <td><div class="actions">
+      <a class="btn btn-sm" href="{{ url_for('fournisseurs.modifier', f_id=f.id) }}">Modifier</a>
+      {% if g.user.role == 'admin' %}
+      <form class="inline" method="post" action="{{ url_for('fournisseurs.supprimer', f_id=f.id) }}" data-confirm="Supprimer ce fournisseur ?">{{ csrf_field() }}
+        <button class="btn btn-sm btn-danger">Supprimer</button></form>{% endif %}
+    </div></td>
+  </tr>
+  {% else %}<tr><td colspan="5" class="empty">Aucun fournisseur.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

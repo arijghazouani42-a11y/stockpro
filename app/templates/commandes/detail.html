@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import statut_badge with context %}
+{% block title %}BC-{{ '%04d'|format(c.numero) }} · StockPro{% endblock %}
+{% block content %}
+<div class="page-head no-print">
+  <div><h2>Commande BC-{{ '%04d'|format(c.numero) }}</h2><div class="sub">{{ statut_badge(c.statut) }}</div></div>
+  <div class="actions">
+    <button class="btn" onclick="window.print()">🖨️ Imprimer</button>
+    {% if c.statut == 'brouillon' %}<form class="inline" method="post" action="{{ url_for('commandes.envoyer', commande_id=c.id) }}">{{ csrf_field() }}<button class="btn">📤 Marquer envoyée</button></form>{% endif %}
+    {% if c.statut in ('brouillon', 'envoyee') %}
+    <form class="inline" method="post" action="{{ url_for('commandes.recevoir', commande_id=c.id) }}" data-confirm="Réceptionner cette commande ? Le stock sera augmenté.">{{ csrf_field() }}<button class="btn btn-primary">✅ Réceptionner</button></form>
+    <form class="inline" method="post" action="{{ url_for('commandes.annuler', commande_id=c.id) }}" data-confirm="Annuler cette commande ?">{{ csrf_field() }}<button class="btn btn-danger">Annuler</button></form>{% endif %}
+    <a class="btn" href="{{ url_for('commandes.liste') }}">← Retour</a>
+  </div>
+</div>
+<div class="card facture">
+  <div class="facture-head">
+    <div><h3>Bon de commande BC-{{ '%04d'|format(c.numero) }}</h3><div class="muted">De: {{ g.user.org_nom }}<br>Date: {{ c.cree_le|dt }}{% if c.recue_le %}<br>Reçue le: {{ c.recue_le|dt }}{% endif %}<br>Créée par: {{ c.user_nom or '-' }}</div></div>
+    <div><h3>Fournisseur</h3><div>{{ c.fournisseur_nom or '-' }}</div><div class="muted">{{ c.f_tel or '' }} {{ c.f_email or '' }}</div></div>
+  </div>
+  <table>
+    <thead><tr><th>Produit</th><th class="num">Quantité</th><th class="num">Prix d'achat</th><th class="num">Total</th></tr></thead>
+    <tbody>
+    {% for l in lignes %}
+    <tr><td>{{ l.produit_nom }}{% if l.reference %} <span class="muted">({{ l.reference }})</span>{% endif %}</td><td class="num">{{ l.quantite }}</td>
+        <td class="num">{{ l.prix_achat|money }}</td><td class="num">{{ (l.quantite * l.prix_achat)|money }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <div class="total-box"><span>Total</span><strong>{{ c.total|money }}</strong></div>
+</div>
+{% endblock %}
