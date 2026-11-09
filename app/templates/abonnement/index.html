@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Abonnement · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Abonnement</h2><div class="sub">Plan actuel: <span class="badge {{ g.user.plan }}">{{ g.user.plan|upper }}</span></div></div></div>
+{% if g.user.plan == 'free' %}
+<div class="card" style="max-width:780px;">
+  <h3>📏 Votre utilisation</h3>
+  {% set pct = (usage.eleves / LIMITE_FREE * 100)|round|int %}
+  <div class="muted">Élèves: {{ usage.eleves }} / {{ LIMITE_FREE }}</div>
+  <div class="progress {{ 'full' if pct >= 90 }}"><div style="width: {{ [pct, 100]|min }}%"></div></div>
+  <div class="muted">Utilisateurs: {{ usage.membres }} / {{ MAX_EQUIPE_FREE }}</div>
+  <div class="progress {{ 'full' if usage.membres >= MAX_EQUIPE_FREE }}"><div style="width: {{ [(usage.membres / MAX_EQUIPE_FREE * 100)|round|int, 100]|min }}%"></div></div>
+</div>
+{% endif %}
+<div class="grid grid-2" style="max-width:780px;">
+  <div class="card pricing-card {{ 'featured' if g.user.plan == 'free' }}">
+    <h3>Free</h3><div class="price">0 DT <small>/ mois</small></div>
+    <ul class="check-list">
+      <li>Jusqu'à {{ LIMITE_FREE }} élèves</li><li>1 utilisateur</li><li>Notes, bulletins, absences</li>
+      <li>Emploi du temps et paiements</li><li class="no">Import / Export CSV</li><li class="no">Équipe, journal, rapports</li></ul>
+    <form method="post" action="{{ url_for('abonnement.changer') }}">{{ csrf_field() }}<input type="hidden" name="plan" value="free">
+      <button class="btn" {{ 'disabled' if g.user.plan == 'free' or g.user.role != 'admin' }}>{{ 'Plan actuel' if g.user.plan == 'free' else 'Passer à Free' }}</button></form>
+  </div>
+  <div class="card pricing-card {{ 'featured' if g.user.plan == 'pro' }}">
+    <h3>Pro</h3><div class="price">49 DT <small>/ mois</small></div>
+    <ul class="check-list">
+      <li>Élèves illimités</li><li>Utilisateurs illimités (rôles)</li><li>Notes, bulletins, absences</li>
+      <li>Emploi du temps et paiements</li><li>Import / Export CSV</li><li>Équipe, journal, rapports avancés</li></ul>
+    <form method="post" action="{{ url_for('abonnement.changer') }}">{{ csrf_field() }}<input type="hidden" name="plan" value="pro">
+      <button class="btn btn-primary" {{ 'disabled' if g.user.plan == 'pro' or g.user.role != 'admin' }}>{{ 'Plan actuel' if g.user.plan == 'pro' else 'Passer au Pro' }}</button></form>
+  </div>
+</div>
+<p class="muted">Paiement simulé pour la démo (en production: Stripe). Seul l'administrateur peut changer de plan.</p>
+{% endblock %}

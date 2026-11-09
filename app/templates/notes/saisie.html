@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.titre }} · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h2>{{ ev.titre }}</h2><div class="sub">{{ ev.matiere_nom }} · {{ ev.classe_nom }} · T{{ ev.trimestre }} · {{ ev.date_eval|datefr }} · sur {{ '%g'|format(ev.bareme) }}</div></div>
+  <div class="actions">
+    {% if g.user.role in ('admin', 'enseignant') %}<form class="inline" method="post" action="{{ url_for('notes.supprimer', eval_id=ev.id) }}" data-confirm="Supprimer l'évaluation et ses notes ?">{{ csrf_field() }}<button class="btn btn-danger">Supprimer</button></form>{% endif %}
+    <a class="btn" href="{{ url_for('notes.liste') }}">← Retour</a>
+  </div>
+</div>
+<div class="grid grid-4" style="margin-bottom:20px;">
+  <div class="card stat"><div><div class="label">Moyenne</div><div class="value">{{ stats.moyenne|note }}</div></div></div>
+  <div class="card stat"><div><div class="label">Meilleure note</div><div class="value">{{ stats.maxi|note }}</div></div></div>
+  <div class="card stat"><div><div class="label">Plus basse</div><div class="value">{{ stats.mini|note }}</div></div></div>
+  <div class="card stat"><div><div class="label">Réussite (≥ moitié)</div><div class="value">{% if stats.reussite is not none %}{{ '%.0f'|format(stats.reussite) }} %{% else %}-{% endif %}</div><div class="sub">{{ stats.n }} / {{ eleves|length }} notes saisies</div></div></div>
+</div>
+<form method="post">{{ csrf_field() }}
+<div class="card flush table-wrap">
+  <table>
+    <thead><tr><th>Élève</th><th>Matricule</th><th class="num">Note / {{ '%g'|format(ev.bareme) }}</th></tr></thead>
+    <tbody>
+    {% for e in eleves %}
+    <tr><td><strong>{{ e.nom }} {{ e.prenom }}</strong></td><td>{{ e.matricule }}</td>
+      <td class="num"><input class="note-input" name="note_{{ e.id }}" type="text" inputmode="decimal" value="{{ existantes[e.id] if e.id in existantes else '' }}" placeholder="-" {{ 'disabled' if g.user.role not in ('admin', 'enseignant') }}></td></tr>
+    {% else %}<tr><td colspan="3" class="empty">Aucun élève actif dans cette classe.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if eleves and g.user.role in ('admin', 'enseignant') %}<button class="btn btn-primary btn-lg">Enregistrer les notes</button>
+<span class="muted">Laissez vide pour un élève absent. Virgule acceptée (ex: 14,5).</span>{% endif %}
+</form>
+{% endblock %}

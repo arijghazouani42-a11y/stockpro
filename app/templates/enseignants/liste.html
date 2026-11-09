@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Enseignants · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Enseignants</h2><div class="sub">Le corps enseignant de l'école</div></div></div>
+{% if g.user.role != 'enseignant' %}
+<div class="card"><h3>➕ Nouvel enseignant</h3>
+  <form method="post">{{ csrf_field() }}
+    <div class="form-row">
+      <div><label>Nom complet</label><input name="nom" required></div>
+      <div><label>Spécialité</label><input name="specialite" placeholder="Mathématiques"></div>
+      <div><label>Téléphone</label><input name="telephone"></div>
+      <div><label>Email</label><input name="email" type="email"></div>
+    </div>
+    <button class="btn btn-primary">Ajouter</button></form></div>
+{% endif %}
+<div class="card flush table-wrap">
+<table>
+  <thead><tr><th>Nom</th><th>Spécialité</th><th>Téléphone</th><th>Email</th><th class="num">Séances</th><th></th></tr></thead>
+  <tbody>
+  {% for en in enseignants %}
+  <tr><td><strong>{{ en.nom }}</strong></td><td>{{ en.specialite or '-' }}</td><td>{{ en.telephone or '-' }}</td><td>{{ en.email or '-' }}</td>
+    <td class="num"><a href="{{ url_for('emploi.index', enseignant=en.id) }}">{{ en.nb_seances }}</a></td>
+    <td><div class="actions">
+      {% if g.user.role != 'enseignant' %}<a class="btn btn-sm" href="{{ url_for('enseignants.modifier', e_id=en.id) }}">Modifier</a>{% endif %}
+      {% if g.user.role == 'admin' %}<form class="inline" method="post" action="{{ url_for('enseignants.supprimer', e_id=en.id) }}" data-confirm="Supprimer cet enseignant ?">{{ csrf_field() }}
+        <button class="btn btn-sm btn-danger">Supprimer</button></form>{% endif %}</div></td></tr>
+  {% else %}<tr><td colspan="6" class="empty">Aucun enseignant.</td></tr>{% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager with context %}
+{% block title %}Élèves · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h2>Élèves</h2><div class="sub">{{ page.total }} élève(s){% if g.user.plan == 'free' %} · limite Free: {{ LIMITE_FREE }}{% endif %}</div></div>
+  <div class="actions">
+    {% if g.user.role == 'admin' %}<a class="btn" href="{{ url_for('eleves.importer') }}">⬆ Import CSV {% if g.user.plan != 'pro' %}<span class="badge pro">Pro</span>{% endif %}</a>{% endif %}
+    <a class="btn" href="{{ url_for('eleves.export') }}">⬇ Export CSV {% if g.user.plan != 'pro' %}<span class="badge pro">Pro</span>{% endif %}</a>
+    {% if g.user.role != 'enseignant' %}<a class="btn btn-primary" href="{{ url_for('eleves.ajouter') }}">+ Inscrire</a>{% endif %}
+  </div>
+</div>
+<form method="get" class="filters">
+  <input name="q" value="{{ q }}" placeholder="🔍 Nom, prénom ou matricule...">
+  <select name="classe"><option value="">Toutes les classes</option>
+    {% for c in classes %}<option value="{{ c.id }}" {{ 'selected' if classe == c.id|string }}>{{ c.nom }}</option>{% endfor %}</select>
+  <select name="statut">
+    <option value="actif" {{ 'selected' if statut == 'actif' }}>Actifs</option>
+    <option value="inactif" {{ 'selected' if statut == 'inactif' }}>Inactifs</option>
+    <option value="" {{ 'selected' if statut == '' }}>Tous</option></select>
+  <select name="tri">
+    <option value="nom" {{ 'selected' if tri == 'nom' }}>Tri: nom</option>
+    <option value="classe" {{ 'selected' if tri == 'classe' }}>Tri: classe</option>
+    <option value="recent" {{ 'selected' if tri == 'recent' }}>Plus récents</option></select>
+  <button class="btn">Filtrer</button><a class="btn" href="{{ url_for('eleves.liste') }}">Réinitialiser</a>
+</form>
+<div class="card flush table-wrap">
+<table>
+  <thead><tr><th>Élève</th><th>Matricule</th><th>Classe</th><th>Parent</th><th>Statut</th><th></th></tr></thead>
+  <tbody>
+  {% for e in page.rows %}
+  <tr><td><a href="{{ url_for('eleves.detail', eleve_id=e.id) }}"><strong>{{ e.nom }} {{ e.prenom }}</strong></a></td>
+      <td>{{ e.matricule }}</td><td>{{ e.classe_nom or '-' }}</td>
+      <td>{{ e.parent_nom or '-' }}<div class="muted">{{ e.parent_tel or '' }}</div></td>
+      <td>{% if e.statut == 'actif' %}<span class="badge ok">Actif</span>{% else %}<span class="badge">Inactif</span>{% endif %}</td>
+      <td><div class="actions">
+        <a class="btn btn-sm" href="{{ url_for('eleves.detail', eleve_id=e.id) }}">Fiche</a>
+        <a class="btn btn-sm" href="{{ url_for('eleves.bulletin', eleve_id=e.id) }}">Bulletin</a></div></td></tr>
+  {% else %}<tr><td colspan="6" class="empty">Aucun élève trouvé.</td></tr>{% endfor %}
+  </tbody>
+</table></div>
+{{ pager(page) }}
+{% endblock %}

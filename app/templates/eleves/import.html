@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Import CSV · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Importer des élèves (CSV)</h2><div class="sub">Reprenez vos listes depuis Excel en quelques secondes</div></div></div>
+{% if g.user.plan != 'pro' %}
+<div class="card lock"><div class="big">🔒</div><p><strong>L'import CSV est réservé au plan Pro.</strong><br><a href="{{ url_for('abonnement.index') }}">Passer au Pro</a></p></div>
+{% else %}
+<div class="grid grid-2">
+  <div class="card"><h3>⬆ Choisir le fichier</h3>
+    <form method="post" enctype="multipart/form-data">{{ csrf_field() }}
+      <input type="file" name="fichier" accept=".csv,text/csv" required>
+      <button class="btn btn-primary">Importer</button><a class="btn" href="{{ url_for('eleves.liste') }}">Annuler</a></form></div>
+  <div class="card"><h3>📄 Format attendu</h3>
+    <p class="muted">Séparateur <code>;</code> ou <code>,</code>. Colonnes obligatoires: <strong>nom</strong>, <strong>prenom</strong>.
+       Optionnelles: date_naissance (AAAA-MM-JJ), sexe (M/F), classe, parent_nom, parent_tel, email, adresse.
+       Les classes absentes sont créées automatiquement (500 lignes max).</p>
+    <a class="btn" href="{{ url_for('eleves.modele') }}">⬇ Télécharger le modèle</a></div>
+</div>
+{% endif %}
+{% endblock %}

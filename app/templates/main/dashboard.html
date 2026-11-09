@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h2>Bonjour {{ g.user.nom.split(' ')[0] }} 👋</h2><div class="sub">Vue d'ensemble de {{ g.user.ecole_nom }}</div></div>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('absences.appel') }}">📋 Faire l'appel</a>
+    <a class="btn" href="{{ url_for('notes.nouvelle') }}">📝 Nouvelle évaluation</a>
+    {% if g.user.role != 'enseignant' %}<a class="btn btn-primary" href="{{ url_for('eleves.ajouter') }}">+ Inscrire un élève</a>{% endif %}
+  </div>
+</div>
+
+<div class="grid grid-4" style="margin-bottom:20px;">
+  <div class="card stat"><div class="ic ic-indigo">🧑‍🎓</div><div><div class="label">Élèves actifs</div>
+    <div class="value">{{ nb_eleves }}{% if g.user.plan == 'free' %}<span class="sub"> / {{ LIMITE_FREE }}</span>{% endif %}</div>
+    <div class="sub">{{ garcons }} garçons · {{ filles }} filles</div></div></div>
+  <div class="card stat"><div class="ic ic-teal">🏫</div><div><div class="label">Classes</div><div class="value">{{ nb_classes }}</div></div></div>
+  <div class="card stat"><div class="ic ic-amber">👩‍🏫</div><div><div class="label">Enseignants</div><div class="value">{{ nb_ens }}</div></div></div>
+  <div class="card stat"><div class="ic ic-red">📋</div><div><div class="label">Absents aujourd'hui</div><div class="value">{{ absents_aujourdhui }}</div></div></div>
+  {% if finance %}
+  <div class="card stat"><div class="ic ic-green">💰</div><div><div class="label">Encaissé</div><div class="value">{{ finance.paye|money }}</div>
+    <div class="sub">sur {{ finance.du|money }} attendus</div></div></div>
+  <a class="card stat stat-link" href="{{ url_for('paiements.impayes') }}"><div class="ic ic-red">⏳</div><div><div class="label">Reste à payer</div>
+    <div class="value">{{ finance.reste|money }}</div><div class="sub">{{ finance.nb_impayes }} élève(s) concerné(s)</div></div></a>
+  {% endif %}
+</div>
+
+<div class="grid grid-2" style="margin-bottom:20px;">
+  <div class="card"><h3>🏫 Effectif par classe</h3>
+    {% if chart_effectif.labels %}<div class="chart-box"><canvas id="chartEffectif"></canvas></div>
+    {% else %}<p class="muted">Créez des classes pour voir la répartition. <a href="{{ url_for('classes.ajouter') }}">Créer une classe</a></p>{% endif %}</div>
+  <div class="card"><h3>📋 Absences des 7 derniers jours</h3><div class="chart-box"><canvas id="chartAbs"></canvas></div></div>
+</div>
+
+{% if finance %}
+<div class="card"><h3>💳 Paiements encaissés (6 derniers mois)</h3><div class="chart-box" style="height:220px;"><canvas id="chartPay"></canvas></div></div>
+{% endif %}
+
+<div class="grid grid-2">
+  <div class="card"><h3>🔔 Élèves à surveiller (≥ {{ SEUIL_ABSENCES }} absences non justifiées)</h3>
+    {% if alertes %}<table><tbody>
+      {% for a in alertes %}<tr><td><a href="{{ url_for('eleves.detail', eleve_id=a.id) }}">{{ a.prenom }} {{ a.nom }}</a> <span class="muted">{{ a.classe_nom or '' }}</span></td>
+        <td class="num"><span class="badge danger">{{ a.n }} absences</span></td></tr>{% endfor %}
+    </tbody></table>{% else %}<p class="muted">Aucune alerte, tout va bien ✅</p>{% endif %}</div>
+  <div class="card"><h3>📝 Dernières évaluations</h3>
+    {% if dernieres_eval %}<table><tbody>
+      {% for ev in dernieres_eval %}<tr><td><a href="{{ url_for('notes.saisie', eval_id=ev.id) }}">{{ ev.titre }}</a>
+        <div class="muted">{{ ev.matiere_nom }} · {{ ev.classe_nom }}</div></td><td class="num">{{ ev.date_eval|datefr }}</td></tr>{% endfor %}
+    </tbody></table>{% else %}<p class="muted">Aucune évaluation pour l'instant.</p>{% endif %}</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  if (typeof Chart === "undefined") return;
+  var eff = {{ chart_effectif|tojson }}, abs = {{ chart_abs|tojson }}, pay = {{ (chart_paiements or {})|tojson }};
+  var charts = [];
+  function dessiner() {
+    charts.forEach(function (c) { c.destroy(); }); charts = [];
+    Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue("--muted").trim() || "#6b7280";
+    Chart.defaults.font.family = "Inter, Segoe UI, system-ui, sans-serif";
+    var opts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "rgba(148,163,184,.2)" } }, x: { grid: { display: false } } } };
+    var a = document.getElementById("chartEffectif");
+    if (a) charts.push(new Chart(a, { type: "bar", data: { labels: eff.labels, datasets: [{ data: eff.valeurs, backgroundColor: "#2563eb", borderRadius: 6 }] }, options: opts }));
+    var b = document.getElementById("chartAbs");
+    if (b) charts.push(new Chart(b, { type: "bar", data: { labels: abs.labels, datasets: [{ data: abs.valeurs, backgroundColor: "#ef4444", borderRadius: 6 }] }, options: opts }));
+    var c = document.getElementById("chartPay");
+    if (c && pay.labels) charts.push(new Chart(c, { type: "bar", data: { labels: pay.labels, datasets: [{ data: pay.valeurs, backgroundColor: "#14b8a6", borderRadius: 6 }] },
+      options: Object.assign({}, opts, { scales: { y: { beginAtZero: true, grid: { color: "rgba(148,163,184,.2)" } }, x: { grid: { display: false } } } }) }));
+  }
+  window.rafraichirCharts = dessiner;
+  dessiner();
+})();
+</script>
+{% endblock %}

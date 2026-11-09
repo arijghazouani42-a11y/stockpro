@@ -1,0 +1,16 @@
+{% macro pager(p) %}
+{% if p.pages > 1 %}
+<div class="pager">
+  {% if p.page > 1 %}<a class="btn btn-sm" href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), page=p.page - 1)) }}">← Précédent</a>{% endif %}
+  <span>Page {{ p.page }} / {{ p.pages }} · {{ p.total }} résultats</span>
+  {% if p.page < p.pages %}<a class="btn btn-sm" href="{{ url_for(request.endpoint, **dict(request.args.to_dict(), page=p.page + 1)) }}">Suivant →</a>{% endif %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro role_badge(r) %}<span class="badge {{ r }}">{{ ROLES_LABEL[r] }}</span>{% endmacro %}
+
+{% macro abs_badge(a) %}{% if a.type == 'retard' %}<span class="badge retard">Retard</span>{% else %}<span class="badge danger">Absence</span>{% endif %}
+{% if a.justifiee %}<span class="badge ok">justifiée</span>{% endif %}{% endmacro %}
+
+{% macro statut_pay(s) %}{% if s == 'valide' %}<span class="badge ok">Valide</span>{% else %}<span class="badge danger">Annulé</span>{% endif %}{% endmacro %}

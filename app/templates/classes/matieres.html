@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Matières · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Matières</h2><div class="sub">Le coefficient pèse dans la moyenne générale</div></div></div>
+{% if g.user.role != 'enseignant' %}
+<div class="card"><h3>➕ Nouvelle matière</h3>
+  <form method="post" class="filters" style="margin:0;">{{ csrf_field() }}
+    <input name="nom" placeholder="Nom (ex: Mathématiques)" required>
+    <input name="coefficient" type="number" step="0.5" min="0.5" value="1" style="max-width:140px;" title="Coefficient">
+    <button class="btn btn-primary">+ Ajouter</button></form></div>
+{% endif %}
+<div class="card flush table-wrap">
+<table>
+  <thead><tr><th>Matière</th><th class="num">Coefficient</th><th class="num">Évaluations</th><th></th></tr></thead>
+  <tbody>
+  {% for m in matieres %}
+  <tr><td><strong>{{ m.nom }}</strong></td><td class="num">{{ m.coefficient }}</td><td class="num">{{ m.nb_eval }}</td>
+    <td class="num">{% if g.user.role == 'admin' %}<form class="inline" method="post" action="{{ url_for('matieres.supprimer', m_id=m.id) }}" data-confirm="Supprimer cette matière ?">{{ csrf_field() }}
+      <button class="btn btn-sm btn-danger">Supprimer</button></form>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="4" class="empty">Aucune matière.</td></tr>{% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

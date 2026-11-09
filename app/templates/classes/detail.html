@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ c.nom }} · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h2>🏫 {{ c.nom }}</h2><div class="sub">{{ c.niveau or '' }} · {{ eleves|length }} / {{ c.capacite }} élèves · Frais {{ c.frais_annuels|money }}</div></div>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('absences.appel', classe=c.id) }}">📋 Appel</a>
+    <a class="btn" href="{{ url_for('emploi.index', classe=c.id) }}">🗓️ Emploi du temps</a>
+    <a class="btn" href="{{ url_for('notes.liste', classe=c.id) }}">📝 Notes</a>
+    {% if g.user.role != 'enseignant' %}<a class="btn" href="{{ url_for('classes.modifier', classe_id=c.id) }}">✏️ Modifier</a>{% endif %}
+    {% if g.user.role == 'admin' %}<form class="inline" method="post" action="{{ url_for('classes.supprimer', classe_id=c.id) }}" data-confirm="Supprimer cette classe ?">{{ csrf_field() }}<button class="btn btn-danger">Supprimer</button></form>{% endif %}
+  </div>
+</div>
+<div class="grid grid-2">
+  <div class="card flush table-wrap"><h3 style="padding:14px 12px 0;">🧑‍🎓 Élèves</h3>
+    <table><tbody>
+    {% for e in eleves %}<tr><td><a href="{{ url_for('eleves.detail', eleve_id=e.id) }}"><strong>{{ e.nom }} {{ e.prenom }}</strong></a> <span class="muted">{{ e.matricule }}</span></td>
+      <td class="num"><a class="btn btn-sm" href="{{ url_for('eleves.bulletin', eleve_id=e.id) }}">Bulletin</a></td></tr>
+    {% else %}<tr><td class="empty">Aucun élève dans cette classe.</td></tr>{% endfor %}
+    </tbody></table></div>
+  <div class="card"><h3>📚 Matières enseignées</h3>
+    {% for m in matieres %}<p style="margin:6px 0;">{{ m.nom }} <span class="muted">· {{ m.ens_nom or 'enseignant non assigné' }}</span></p>
+    {% else %}<p class="muted">Aucune séance planifiée. <a href="{{ url_for('emploi.index', classe=c.id) }}">Ajouter l'emploi du temps</a></p>{% endfor %}</div>
+</div>
+{% endblock %}

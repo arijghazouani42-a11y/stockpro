@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import statut_pay with context %}
+{% block title %}REC-{{ '%04d'|format(p.numero) }} · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head no-print">
+  <div><h2>Reçu REC-{{ '%04d'|format(p.numero) }}</h2><div class="sub">{{ statut_pay(p.statut) }}</div></div>
+  <div class="actions">
+    <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimer / PDF</button>
+    {% if p.statut == 'valide' and g.user.role == 'admin' %}
+    <form class="inline" method="post" action="{{ url_for('paiements.annuler', paiement_id=p.id) }}" data-confirm="Annuler ce paiement ?">{{ csrf_field() }}<button class="btn btn-danger">Annuler le paiement</button></form>{% endif %}
+    <a class="btn" href="{{ url_for('paiements.liste') }}">← Retour</a>
+  </div>
+</div>
+<div class="card facture">
+  <div class="facture-head">
+    <div><h3>🎓 {{ g.user.ecole_nom }}</h3><div class="muted">Reçu de paiement REC-{{ '%04d'|format(p.numero) }}<br>Date: {{ p.date_paiement|datefr }}<br>Reçu par: {{ p.user_nom or '-' }}</div></div>
+    <div><h3>Élève</h3><div>{{ p.prenom }} {{ p.nom }}</div><div class="muted">Matricule: {{ p.matricule }}<br>Classe: {{ p.classe_nom or '-' }}</div></div>
+  </div>
+  <table><thead><tr><th>Motif</th><th>Mode</th><th class="num">Montant</th></tr></thead>
+    <tbody><tr><td>{{ p.motif }}</td><td>{{ p.mode|capitalize }}</td><td class="num"><strong>{{ p.montant|money }}</strong></td></tr></tbody></table>
+  {% if solde %}<div class="total-box"><span>Reste à payer</span><strong>{{ solde.reste|money }}</strong></div>
+  <p class="muted">Frais annuels: {{ solde.du|money }} · Total payé: {{ solde.paye|money }}</p>{% endif %}
+  {% if p.statut == 'annule' %}<p><span class="badge danger">PAIEMENT ANNULÉ</span></p>{% endif %}
+</div>
+{% endblock %}

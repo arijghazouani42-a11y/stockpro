@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Emploi du temps · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Emploi du temps</h2><div class="sub">Les conflits (même classe ou même enseignant au même moment) sont bloqués automatiquement</div></div></div>
+<form method="get" class="filters">
+  <select name="classe"><option value="">Toutes les classes</option>
+    {% for c in classes %}<option value="{{ c.id }}" {{ 'selected' if classe == c.id|string }}>{{ c.nom }}</option>{% endfor %}</select>
+  <select name="enseignant"><option value="">Tous les enseignants</option>
+    {% for en in enseignants %}<option value="{{ en.id }}" {{ 'selected' if ens == en.id|string }}>{{ en.nom }}</option>{% endfor %}</select>
+  <button class="btn">Afficher</button><a class="btn" href="{{ url_for('emploi.index') }}">Réinitialiser</a>
+  <button type="button" class="btn" onclick="window.print()">🖨️ Imprimer</button>
+</form>
+
+<div class="edt" style="margin-bottom:24px;">
+  {% for j, nom in JOURS.items() %}
+  <div class="edt-jour"><h4>{{ nom }}</h4>
+    {% for s in par_jour[j] %}
+    <div class="seance"><span class="heure">{{ s.debut }} - {{ s.fin }}</span>
+      <strong>{{ s.matiere_nom }}</strong>{{ s.classe_nom }}{% if s.ens_nom %} · {{ s.ens_nom }}{% endif %}{% if s.salle %} · salle {{ s.salle }}{% endif %}
+      {% if g.user.role != 'enseignant' %}<form method="post" action="{{ url_for('emploi.supprimer', seance_id=s.id) }}" data-confirm="Supprimer cette séance ?" class="no-print">{{ csrf_field() }}<button class="btn btn-sm btn-danger">✕</button></form>{% endif %}
+    </div>
+    {% else %}<div class="muted">-</div>{% endfor %}
+  </div>
+  {% endfor %}
+</div>
+
+{% if g.user.role != 'enseignant' %}
+<div class="card no-print"><h3>➕ Ajouter une séance</h3>
+  {% if not classes or not matieres %}<p class="muted">Créez d'abord au moins une <a href="{{ url_for('classes.ajouter') }}">classe</a> et une <a href="{{ url_for('matieres.liste') }}">matière</a>.</p>
+  {% else %}
+  <form method="post" action="{{ url_for('emploi.ajouter') }}">{{ csrf_field() }}
+    <div class="form-row">
+      <div><label>Classe</label><select name="classe_id" required>{% for c in classes %}<option value="{{ c.id }}" {{ 'selected' if classe == c.id|string }}>{{ c.nom }}</option>{% endfor %}</select></div>
+      <div><label>Matière</label><select name="matiere_id" required>{% for m in matieres %}<option value="{{ m.id }}">{{ m.nom }}</option>{% endfor %}</select></div>
+      <div><label>Enseignant</label><select name="enseignant_id"><option value="">--</option>{% for en in enseignants %}<option value="{{ en.id }}" {{ 'selected' if ens == en.id|string }}>{{ en.nom }}</option>{% endfor %}</select></div>
+    </div>
+    <div class="form-row">
+      <div><label>Jour</label><select name="jour">{% for j, nom in JOURS.items() %}<option value="{{ j }}">{{ nom }}</option>{% endfor %}</select></div>
+      <div><label>Début</label><input name="debut" type="time" value="08:00" required></div>
+      <div><label>Fin</label><input name="fin" type="time" value="09:00" required></div>
+      <div><label>Salle</label><input name="salle" placeholder="A1"></div>
+    </div>
+    <button class="btn btn-primary">Ajouter la séance</button>
+  </form>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

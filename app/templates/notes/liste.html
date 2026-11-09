@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager with context %}
+{% block title %}Notes · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Évaluations & notes</h2><div class="sub">Devoirs, examens et saisie des notes par classe</div></div>
+  {% if g.user.role in ('admin', 'enseignant') %}<a class="btn btn-primary" href="{{ url_for('notes.nouvelle') }}">+ Nouvelle évaluation</a>{% endif %}</div>
+<form method="get" class="filters">
+  <select name="classe"><option value="">Toutes les classes</option>
+    {% for c in classes %}<option value="{{ c.id }}" {{ 'selected' if classe == c.id|string }}>{{ c.nom }}</option>{% endfor %}</select>
+  <select name="trimestre"><option value="">Tous les trimestres</option>
+    {% for t in ('1', '2', '3') %}<option value="{{ t }}" {{ 'selected' if trimestre == t }}>Trimestre {{ t }}</option>{% endfor %}</select>
+  <button class="btn">Filtrer</button><a class="btn" href="{{ url_for('notes.liste') }}">Réinitialiser</a>
+</form>
+<div class="card flush table-wrap">
+<table>
+  <thead><tr><th>Évaluation</th><th>Classe</th><th>Matière</th><th>Type</th><th class="num">Trim.</th><th>Date</th><th class="num">Notes</th><th></th></tr></thead>
+  <tbody>
+  {% for ev in page.rows %}
+  <tr><td><a href="{{ url_for('notes.saisie', eval_id=ev.id) }}"><strong>{{ ev.titre }}</strong></a></td><td>{{ ev.classe_nom }}</td><td>{{ ev.matiere_nom }}</td>
+    <td><span class="badge info">{{ ev.type }}</span></td><td class="num">T{{ ev.trimestre }}</td><td>{{ ev.date_eval|datefr }}</td><td class="num">{{ ev.nb_notes }}</td>
+    <td class="num"><a class="btn btn-sm" href="{{ url_for('notes.saisie', eval_id=ev.id) }}">Saisir / voir</a></td></tr>
+  {% else %}<tr><td colspan="8" class="empty">Aucune évaluation.</td></tr>{% endfor %}
+  </tbody>
+</table></div>
+{{ pager(page) }}
+{% endblock %}

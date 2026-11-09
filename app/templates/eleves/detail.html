@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "_macros.html" import abs_badge, statut_pay with context %}
+{% block title %}{{ e.prenom }} {{ e.nom }} · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h2>{{ e.prenom }} {{ e.nom }}</h2><div class="sub">{{ e.matricule }} · {{ e.classe_nom or 'Sans classe' }} · {% if e.statut == 'actif' %}Actif{% else %}Inactif{% endif %}</div></div>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('eleves.bulletin', eleve_id=e.id) }}">📄 Bulletin</a>
+    {% if g.user.role != 'enseignant' %}<a class="btn" href="{{ url_for('paiements.nouveau', eleve=e.id) }}">💳 Paiement</a>
+    <a class="btn" href="{{ url_for('eleves.modifier', eleve_id=e.id) }}">✏️ Modifier</a>{% endif %}
+    {% if g.user.role == 'admin' %}<form class="inline" method="post" action="{{ url_for('eleves.supprimer', eleve_id=e.id) }}" data-confirm="Supprimer cet élève ?">{{ csrf_field() }}<button class="btn btn-danger">Supprimer</button></form>{% endif %}
+    <a class="btn" href="{{ url_for('eleves.liste') }}">← Retour</a>
+  </div>
+</div>
+<div class="grid grid-2" style="margin-bottom:20px;">
+  <div class="card"><h3>📋 Informations</h3>
+    <dl class="kv">
+      <dt>Date de naissance</dt><dd>{{ e.date_naissance|datefr or '-' }}</dd>
+      <dt>Sexe</dt><dd>{{ 'Garçon' if e.sexe == 'M' else ('Fille' if e.sexe == 'F' else '-') }}</dd>
+      <dt>Parent / tuteur</dt><dd>{{ e.parent_nom or '-' }}</dd>
+      <dt>Téléphone parent</dt><dd>{{ e.parent_tel or '-' }}</dd>
+      <dt>Email</dt><dd>{{ e.email or '-' }}</dd>
+      <dt>Adresse</dt><dd>{{ e.adresse or '-' }}</dd>
+    </dl></div>
+  <div class="card"><h3>📋 Assiduité</h3>
+    <dl class="kv">
+      <dt>Absences non justifiées</dt><dd><span class="badge {{ 'danger' if abs_stats.non_just >= SEUIL_ABSENCES else 'ok' }}">{{ abs_stats.non_just }}</span></dd>
+      <dt>Absences justifiées</dt><dd>{{ abs_stats.just }}</dd>
+      <dt>Retards</dt><dd>{{ abs_stats.retards }}</dd>
+    </dl>
+    {% if abs_stats.non_just >= SEUIL_ABSENCES %}<p class="muted" style="margin-top:10px;">⚠️ Seuil d'alerte atteint ({{ SEUIL_ABSENCES }}). Contactez le parent.</p>{% endif %}
+    {% if g.user.role != 'enseignant' %}
+    <h3 style="margin-top:18px;">💳 Scolarité</h3>
+    <dl class="kv"><dt>Frais annuels</dt><dd>{{ solde.du|money }}</dd><dt>Payé</dt><dd>{{ solde.paye|money }}</dd>
+      <dt>Reste</dt><dd><span class="badge {{ 'danger' if solde.reste > 0 else 'ok' }}">{{ solde.reste|money }}</span></dd></dl>{% endif %}
+  </div>
+</div>
+<div class="grid grid-2">
+  <div class="card flush table-wrap"><h3 style="padding:14px 12px 0;">📝 Dernières notes</h3>
+    <table><tbody>
+    {% for n in notes %}<tr><td>{{ n.matiere_nom }} <span class="muted">{{ n.titre }} · T{{ n.trimestre }}</span></td><td class="num"><strong>{{ n.valeur|note }}</strong> / {{ '%g'|format(n.bareme) }}</td></tr>
+    {% else %}<tr><td class="empty">Aucune note.</td></tr>{% endfor %}</tbody></table></div>
+  <div class="card flush table-wrap"><h3 style="padding:14px 12px 0;">🕒 Dernières absences</h3>
+    <table><tbody>
+    {% for a in absences %}<tr><td>{{ a.date_abs|datefr }}</td><td>{{ abs_badge(a) }}</td><td>{{ a.motif or '' }}</td></tr>
+    {% else %}<tr><td class="empty">Aucune absence 👍</td></tr>{% endfor %}</tbody></table></div>
+</div>
+{% if g.user.role != 'enseignant' and paiements %}
+<div class="card flush table-wrap"><h3 style="padding:14px 12px 0;">💳 Derniers paiements</h3>
+  <table><tbody>{% for p in paiements %}<tr><td><a href="{{ url_for('paiements.recu', paiement_id=p.id) }}">REC-{{ '%04d'|format(p.numero) }}</a></td>
+    <td>{{ p.date_paiement|datefr }}</td><td>{{ p.motif }}</td><td class="num"><strong>{{ p.montant|money }}</strong></td><td>{{ statut_pay(p.statut) }}</td></tr>{% endfor %}</tbody></table></div>
+{% endif %}
+{% endblock %}

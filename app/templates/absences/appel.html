@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Appel · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Appel & absences</h2><div class="sub">Marquez les absents et les retards de la journée</div></div>
+  <a class="btn" href="{{ url_for('absences.historique') }}">🕒 Historique {% if nb_alertes %}<span class="badge danger">{{ nb_alertes }} alerte(s)</span>{% endif %}</a></div>
+<form method="get" class="filters">
+  <select name="classe" required><option value="">-- Choisir une classe --</option>
+    {% for c in classes %}<option value="{{ c.id }}" {{ 'selected' if classe == c.id|string }}>{{ c.nom }}</option>{% endfor %}</select>
+  <input type="date" name="date" value="{{ jour }}" style="max-width:190px;">
+  <button class="btn btn-primary">Afficher</button>
+</form>
+{% if classe and eleves %}
+<form method="post">{{ csrf_field() }}
+  <input type="hidden" name="classe_id" value="{{ classe }}"><input type="hidden" name="date" value="{{ jour }}">
+  <div class="card">
+    <h3>Appel du {{ jour|datefr }} · {{ eleves|length }} élèves</h3>
+    {% for e in eleves %}
+    {% set a = existant.get(e.id) %}
+    {% set st = a.type if a else 'present' %}
+    <div class="appel-row">
+      <div><strong>{{ e.nom }} {{ e.prenom }}</strong> <span class="muted">{{ e.matricule }}</span></div>
+      <div>
+        <label><input type="radio" name="statut_{{ e.id }}" value="present" {{ 'checked' if st == 'present' }}> Présent</label>
+        <label><input type="radio" name="statut_{{ e.id }}" value="absence" {{ 'checked' if st == 'absence' }}> Absent</label>
+        <label><input type="radio" name="statut_{{ e.id }}" value="retard" {{ 'checked' if st == 'retard' }}> Retard</label>
+      </div>
+      <label><input type="checkbox" name="just_{{ e.id }}" value="1" {{ 'checked' if a and a.justifiee }}> Justifiée</label>
+      <input type="text" name="motif_{{ e.id }}" placeholder="Motif (optionnel)" value="{{ a.motif if a and a.motif else '' }}">
+    </div>
+    {% endfor %}
+  </div>
+  <button class="btn btn-primary btn-lg">Enregistrer l'appel</button>
+</form>
+{% elif classe %}<div class="card empty">Aucun élève actif dans cette classe.</div>
+{% else %}<div class="card empty">Choisissez une classe pour faire l'appel.</div>{% endif %}
+{% endblock %}

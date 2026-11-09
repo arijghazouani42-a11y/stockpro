@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Page introuvable · SchoolPro{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div class="code">404</div>
+  <h2>Page introuvable</h2>
+  <p class="muted">Cette page n'existe pas ou vous n'y avez pas accès.</p>
+  <a class="btn btn-primary" href="{{ url_for('main.index') }}">Retour à l'accueil</a>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Connexion · SchoolPro{% endblock %}
+{% block content %}
+<div class="auth-wrap"><div class="card auth-box">
+  <h2>Bon retour 👋</h2>
+  <p class="sub">Connectez-vous pour gérer votre école</p>
+  <form method="post">
+    {{ csrf_field() }}
+    <label>Email</label><input name="email" type="email" required autofocus>
+    <label>Mot de passe</label><input name="password" type="password" required>
+    <button class="btn btn-primary btn-lg" style="width:100%; justify-content:center;">Se connecter</button>
+  </form>
+  <p class="muted" style="text-align:center; margin-top:18px;">Pas de compte ? <a href="{{ url_for('auth.register') }}">Inscription</a></p>
+</div></div>
+{% endblock %}

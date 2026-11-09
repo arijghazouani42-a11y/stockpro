@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager, abs_badge with context %}
+{% block title %}Historique des absences · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Historique des absences</h2><div class="sub">Absences, retards et justifications</div></div>
+  <a class="btn btn-primary" href="{{ url_for('absences.appel') }}">📋 Faire l'appel</a></div>
+{% if alertes %}
+<div class="card" style="border-left:5px solid var(--danger);"><h3>🔔 Élèves à surveiller (≥ {{ SEUIL_ABSENCES }} absences non justifiées)</h3>
+  {% for a in alertes %}<p style="margin:6px 0;"><a href="{{ url_for('eleves.detail', eleve_id=a.id) }}"><strong>{{ a.prenom }} {{ a.nom }}</strong></a>
+    <span class="muted">{{ a.classe_nom or '' }}</span> <span class="badge danger">{{ a.n }} absences</span></p>{% endfor %}</div>
+{% endif %}
+<form method="get" class="filters">
+  <select name="classe"><option value="">Toutes les classes</option>
+    {% for c in classes %}<option value="{{ c.id }}" {{ 'selected' if classe == c.id|string }}>{{ c.nom }}</option>{% endfor %}</select>
+  <select name="type"><option value="">Absences et retards</option>
+    <option value="absence" {{ 'selected' if type_ == 'absence' }}>Absences</option><option value="retard" {{ 'selected' if type_ == 'retard' }}>Retards</option></select>
+  <select name="justifiee"><option value="">Justifiées ou non</option>
+    <option value="0" {{ 'selected' if just == '0' }}>Non justifiées</option><option value="1" {{ 'selected' if just == '1' }}>Justifiées</option></select>
+  <button class="btn">Filtrer</button><a class="btn" href="{{ url_for('absences.historique') }}">Réinitialiser</a>
+</form>
+<div class="card flush table-wrap">
+<table>
+  <thead><tr><th>Date</th><th>Élève</th><th>Classe</th><th>Type</th><th>Motif</th><th></th></tr></thead>
+  <tbody>
+  {% for a in page.rows %}
+  <tr><td>{{ a.date_abs|datefr }}</td><td><a href="{{ url_for('eleves.detail', eleve_id=a.eleve_id) }}">{{ a.nom }} {{ a.prenom }}</a></td>
+    <td>{{ a.classe_nom or '-' }}</td><td>{{ abs_badge(a) }}</td><td>{{ a.motif or '' }}</td>
+    <td class="num"><form class="inline" method="post" action="{{ url_for('absences.justifier', absence_id=a.id) }}">{{ csrf_field() }}
+      <input type="hidden" name="next" value="{{ request.full_path }}"><button class="btn btn-sm">{{ 'Retirer justification' if a.justifiee else 'Justifier' }}</button></form></td></tr>
+  {% else %}<tr><td colspan="6" class="empty">Aucune absence enregistrée.</td></tr>{% endfor %}
+  </tbody>
+</table></div>
+{{ pager(page) }}
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Accès refusé · SchoolPro{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div class="code">403</div>
+  <h2>Accès refusé</h2>
+  <p class="muted">Votre rôle ne permet pas d'accéder à cette page.</p>
+  <a class="btn btn-primary" href="{{ url_for('main.index') }}">Retour à l'accueil</a>
+</div>
+{% endblock %}

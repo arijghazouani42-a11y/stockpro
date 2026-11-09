@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Nouvelle évaluation · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Nouvelle évaluation</h2></div></div>
+{% if not classes or not matieres %}
+<div class="card"><p class="muted">Créez d'abord au moins une <a href="{{ url_for('classes.ajouter') }}">classe</a> et une <a href="{{ url_for('matieres.liste') }}">matière</a>.</p></div>
+{% else %}
+<div class="card" style="max-width:760px;">
+<form method="post">{{ csrf_field() }}
+  <div class="form-row">
+    <div><label>Classe</label><select name="classe_id" required>{% for c in classes %}<option value="{{ c.id }}">{{ c.nom }}</option>{% endfor %}</select></div>
+    <div><label>Matière</label><select name="matiere_id" required>{% for m in matieres %}<option value="{{ m.id }}">{{ m.nom }}</option>{% endfor %}</select></div>
+  </div>
+  <label>Titre</label><input name="titre" placeholder="Devoir de synthèse n°1" required>
+  <div class="form-row">
+    <div><label>Type</label><select name="type">{% for t in types %}<option>{{ t }}</option>{% endfor %}</select></div>
+    <div><label>Trimestre</label><select name="trimestre"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+    <div><label>Date</label><input name="date_eval" type="date" value="{{ today }}"></div>
+    <div><label>Barème (note max)</label><input name="bareme" type="number" step="0.5" min="1" value="20"></div>
+  </div>
+  <button class="btn btn-primary">Créer et saisir les notes</button>
+  <a class="btn" href="{{ url_for('notes.liste') }}">Annuler</a>
+</form></div>
+{% endif %}
+{% endblock %}

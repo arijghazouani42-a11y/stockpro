@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Erreur serveur · SchoolPro{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div class="code">500</div>
+  <h2>Erreur serveur</h2>
+  <p class="muted">Une erreur est survenue. Réessayez dans un instant.</p>
+  <a class="btn btn-primary" href="{{ url_for('main.index') }}">Retour à l'accueil</a>
+</div>
+{% endblock %}

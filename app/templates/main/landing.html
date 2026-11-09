@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Gérez votre école.<br>Simplement. En ligne.</h1>
+  <p>SchoolPro aide les établissements scolaires à gérer leurs élèves, leurs notes et bulletins,
+     les absences, l'emploi du temps et les frais de scolarité. Aucune installation.</p>
+  <div class="cta">
+    <a class="btn btn-white btn-lg" href="{{ url_for('auth.register') }}">Commencer gratuitement</a>
+    <a class="btn btn-outline-white btn-lg" href="#tarifs">Voir les tarifs</a>
+  </div>
+</section>
+
+<div class="section-title"><h2>Tout ce qu'il faut pour piloter votre école</h2></div>
+<section class="grid grid-3">
+  <div class="card feature"><span class="emoji">🧑‍🎓</span><h3>Élèves & classes</h3><p>Inscriptions, fiches complètes, matricule automatique et capacité des classes respectée.</p></div>
+  <div class="card feature"><span class="emoji">📝</span><h3>Notes & bulletins</h3><p>Évaluations par trimestre, moyennes pondérées, rang dans la classe et bulletin imprimable.</p></div>
+  <div class="card feature"><span class="emoji">📋</span><h3>Absences & alertes</h3><p>Appel en quelques clics, justification, alerte quand un élève cumule trop d'absences.</p></div>
+  <div class="card feature"><span class="emoji">🗓️</span><h3>Emploi du temps</h3><p>Planning par classe ou par enseignant, avec détection automatique des conflits.</p></div>
+  <div class="card feature"><span class="emoji">💳</span><h3>Frais de scolarité</h3><p>Paiements, reçus imprimables, solde par élève et liste des impayés.</p></div>
+  <div class="card feature"><span class="emoji">👥</span><h3>Équipe & rôles</h3><p>Directeur, secrétaire, enseignant: chacun voit uniquement ce dont il a besoin.</p></div>
+  <div class="card feature"><span class="emoji">📊</span><h3>Dashboard & rapports</h3><p>Effectifs, présence, finances, taux de réussite par classe et meilleurs élèves.</p></div>
+  <div class="card feature"><span class="emoji">⬆</span><h3>Import / export Excel</h3><p>Importez vos élèves depuis un fichier CSV et exportez vos données.</p></div>
+  <div class="card feature"><span class="emoji">🔒</span><h3>Données isolées</h3><p>Chaque école voit uniquement ses propres données, stockées sur Supabase.</p></div>
+</section>
+
+<div class="section-title"><h2>Comment ça marche</h2></div>
+<section class="grid grid-3">
+  <div class="step"><div class="n">1</div><h3>Créez votre école</h3><p>Inscription en 30 secondes.</p></div>
+  <div class="step"><div class="n">2</div><h3>Configurez</h3><p>Classes, matières, enseignants et élèves.</p></div>
+  <div class="step"><div class="n">3</div><h3>Pilotez</h3><p>Notes, absences, paiements et rapports au même endroit.</p></div>
+</section>
+
+<div class="section-title" id="tarifs"><h2>Tarifs simples</h2></div>
+<section class="grid grid-2" style="max-width:780px; margin:0 auto;">
+  <div class="card pricing-card">
+    <h3>Free</h3>
+    <div class="price">0 DT <small>/ mois</small></div>
+    <ul class="check-list">
+      <li>Jusqu'à {{ LIMITE_FREE }} élèves</li><li>1 utilisateur</li><li>Notes, bulletins, absences</li>
+      <li>Emploi du temps et paiements</li><li class="no">Import / Export CSV</li><li class="no">Équipe, journal, rapports</li>
+    </ul>
+    <a class="btn" href="{{ url_for('auth.register') }}">Choisir Free</a>
+  </div>
+  <div class="card pricing-card featured">
+    <span class="ribbon">Populaire</span>
+    <h3>Pro</h3>
+    <div class="price">49 DT <small>/ mois</small></div>
+    <ul class="check-list">
+      <li>Élèves illimités</li><li>Utilisateurs illimités (rôles)</li><li>Notes, bulletins, absences</li>
+      <li>Emploi du temps et paiements</li><li>Import / Export CSV</li><li>Équipe, journal, rapports avancés</li>
+    </ul>
+    <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Choisir Pro</a>
+  </div>
+</section>
+
+<div class="section-title"><h2>Questions fréquentes</h2></div>
+<section class="faq" style="max-width:760px; margin:0 auto;">
+  <details><summary>Les données de mon école sont-elles privées ?</summary><p>Oui. Chaque école est isolée: chaque requête est filtrée par établissement.</p></details>
+  <details><summary>Puis-je donner un accès limité aux enseignants ?</summary><p>Oui, avec les rôles: un enseignant saisit les notes et les absences mais ne voit pas les finances.</p></details>
+  <details><summary>Où sont stockées les données ?</summary><p>Dans une base PostgreSQL hébergée sur Supabase.</p></details>
+</section>
+<div class="footer">© {{ annee }} SchoolPro · Projet SaaS de gestion d'école</div>
+{% endblock %}

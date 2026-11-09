@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Classes · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Classes</h2><div class="sub">{{ classes|length }} classe(s)</div></div>
+  {% if g.user.role != 'enseignant' %}<a class="btn btn-primary" href="{{ url_for('classes.ajouter') }}">+ Nouvelle classe</a>{% endif %}</div>
+<div class="grid grid-3">
+  {% for c in classes %}
+  <div class="card">
+    <h3><a href="{{ url_for('classes.detail', classe_id=c.id) }}">🏫 {{ c.nom }}</a></h3>
+    <div class="muted">{{ c.niveau or 'Niveau non précisé' }} · Frais: {{ c.frais_annuels|money }}</div>
+    {% set pct = ((c.nb / c.capacite * 100)|round|int) if c.capacite else 0 %}
+    <div class="progress {{ 'full' if pct >= 100 }}"><div style="width: {{ [pct, 100]|min }}%"></div></div>
+    <div class="muted">{{ c.nb }} / {{ c.capacite }} élèves</div>
+    <div class="actions" style="justify-content:flex-start; margin-top:12px;">
+      <a class="btn btn-sm" href="{{ url_for('classes.detail', classe_id=c.id) }}">Ouvrir</a>
+      <a class="btn btn-sm" href="{{ url_for('emploi.index', classe=c.id) }}">🗓️ Emploi du temps</a>
+    </div>
+  </div>
+  {% else %}<div class="card empty" style="grid-column:1/-1;">Aucune classe. <a href="{{ url_for('classes.ajouter') }}">Créer la première</a></div>{% endfor %}
+</div>
+{% endblock %}

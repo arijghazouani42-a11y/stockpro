@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Bulletin · {{ e.prenom }} {{ e.nom }}{% endblock %}
+{% block content %}
+<div class="page-head no-print">
+  <div><h2>Bulletin scolaire</h2><div class="sub">{{ e.prenom }} {{ e.nom }}</div></div>
+  <div class="actions">
+    <form method="get" class="inline"><select name="trimestre" onchange="this.form.submit()" style="width:auto; margin:0;">
+      <option value="1" {{ 'selected' if trimestre == 1 }}>Trimestre 1</option><option value="2" {{ 'selected' if trimestre == 2 }}>Trimestre 2</option>
+      <option value="3" {{ 'selected' if trimestre == 3 }}>Trimestre 3</option><option value="0" {{ 'selected' if trimestre == 0 }}>Année complète</option></select></form>
+    <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimer / PDF</button>
+    <a class="btn" href="{{ url_for('eleves.detail', eleve_id=e.id) }}">← Retour</a>
+  </div>
+</div>
+<div class="card bulletin">
+  <div class="facture-head">
+    <div><h3>🎓 {{ g.user.ecole_nom }}</h3><div class="muted">Année scolaire {{ g.user.annee_scolaire }}<br>{{ 'Année complète' if trimestre == 0 else 'Trimestre ' ~ trimestre }}</div></div>
+    <div><h3>{{ e.prenom }} {{ e.nom }}</h3><div class="muted">Matricule: {{ e.matricule }}<br>Classe: {{ e.classe_nom or '-' }}<br>Né(e) le: {{ e.date_naissance|datefr or '-' }}</div></div>
+  </div>
+  <table>
+    <thead><tr><th>Matière</th><th class="num">Coef.</th><th class="num">Moyenne /20</th><th class="num">Moy. classe</th><th>Appréciation</th></tr></thead>
+    <tbody>
+    {% for l in lignes %}
+    <tr><td>{{ l.matiere }}</td><td class="num">{{ l.coef }}</td><td class="num"><strong>{{ l.moyenne|note }}</strong></td>
+        <td class="num">{{ l.moy_classe|note }}</td><td>{{ l.appreciation }}</td></tr>
+    {% else %}<tr><td colspan="5" class="empty">Aucune note pour cette période.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  <div class="grid grid-3" style="margin-top:20px;">
+    <div><div class="muted">Moyenne générale</div><div class="big-note">{{ generale|note }}</div></div>
+    <div><div class="muted">Rang</div><div class="big-note">{% if rang %}{{ rang }}<span class="muted" style="font-size:16px;"> / {{ calc.effectif }}</span>{% else %}-{% endif %}</div></div>
+    <div><div class="muted">Moyenne de la classe</div><div class="big-note">{{ (calc.moyenne_classe if calc else None)|note }}</div></div>
+  </div>
+  <p style="margin-top:18px;"><strong>Appréciation générale:</strong> {{ appreciation }} · <strong>Absences non justifiées:</strong> {{ abs_n }}</p>
+</div>
+{% endblock %}

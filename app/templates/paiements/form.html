@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Nouveau paiement · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Nouveau paiement</h2><div class="sub">Le montant ne peut pas dépasser le reste à payer de l'élève</div></div></div>
+{% if not lignes %}<div class="card"><p class="muted">Aucun élève actif. <a href="{{ url_for('eleves.ajouter') }}">Inscrire un élève</a></p></div>
+{% else %}
+<div class="card" style="max-width:720px;">
+<form method="post">{{ csrf_field() }}
+  <label>Élève</label>
+  <select name="eleve_id" required>
+    {% for s in lignes %}<option value="{{ s.id }}" {{ 'selected' if preselection == s.id|string }}>{{ s.nom }} {{ s.prenom }} · {{ s.classe_nom or 'sans classe' }} · reste {{ '%.2f'|format(s.reste) }} DT</option>{% endfor %}
+  </select>
+  <div class="form-row">
+    <div><label>Montant (DT)</label><input name="montant" type="number" step="0.01" min="0.01" required></div>
+    <div><label>Mode</label><select name="mode">{% for m in modes %}<option value="{{ m }}">{{ m|capitalize }}</option>{% endfor %}</select></div>
+    <div><label>Date</label><input name="date_paiement" type="date" value="{{ today }}"></div>
+  </div>
+  <label>Motif</label><input name="motif" value="Frais de scolarité">
+  <button class="btn btn-primary">Enregistrer le paiement</button>
+  <a class="btn" href="{{ url_for('paiements.liste') }}">Annuler</a>
+</form></div>
+{% endif %}
+{% endblock %}

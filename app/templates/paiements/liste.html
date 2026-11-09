@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager, statut_pay with context %}
+{% block title %}Paiements · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h2>Paiements</h2><div class="sub">Total encaissé: <strong>{{ total|money }}</strong></div></div>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('paiements.impayes') }}">⏳ Impayés</a>
+    <a class="btn" href="{{ url_for('paiements.export') }}">⬇ Export CSV {% if g.user.plan != 'pro' %}<span class="badge pro">Pro</span>{% endif %}</a>
+    <a class="btn btn-primary" href="{{ url_for('paiements.nouveau') }}">+ Nouveau paiement</a>
+  </div>
+</div>
+<form method="get" class="filters">
+  <input name="q" value="{{ q }}" placeholder="🔍 Nom de l'élève...">
+  <select name="statut"><option value="">Tous les statuts</option>
+    <option value="valide" {{ 'selected' if statut == 'valide' }}>Valides</option><option value="annule" {{ 'selected' if statut == 'annule' }}>Annulés</option></select>
+  <button class="btn">Filtrer</button><a class="btn" href="{{ url_for('paiements.liste') }}">Réinitialiser</a>
+</form>
+<div class="card flush table-wrap">
+<table>
+  <thead><tr><th>Reçu</th><th>Date</th><th>Élève</th><th>Motif</th><th>Mode</th><th class="num">Montant</th><th>Statut</th><th></th></tr></thead>
+  <tbody>
+  {% for p in page.rows %}
+  <tr><td><strong>REC-{{ '%04d'|format(p.numero) }}</strong></td><td>{{ p.date_paiement|datefr }}</td>
+    <td><a href="{{ url_for('eleves.detail', eleve_id=p.eleve_id) }}">{{ p.nom }} {{ p.prenom }}</a> <span class="muted">{{ p.classe_nom or '' }}</span></td>
+    <td>{{ p.motif }}</td><td>{{ p.mode }}</td><td class="num"><strong>{{ p.montant|money }}</strong></td><td>{{ statut_pay(p.statut) }}</td>
+    <td class="num"><a class="btn btn-sm" href="{{ url_for('paiements.recu', paiement_id=p.id) }}">Reçu</a></td></tr>
+  {% else %}<tr><td colspan="8" class="empty">Aucun paiement.</td></tr>{% endfor %}
+  </tbody>
+</table></div>
+{{ pager(page) }}
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Impayés · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h2>Élèves avec un reste à payer</h2><div class="sub">{{ lignes|length }} élève(s) · Total à recouvrer: <strong>{{ total|money }}</strong></div></div>
+  <button class="btn" onclick="window.print()">🖨️ Imprimer</button>
+</div>
+<div class="card flush table-wrap">
+<table>
+  <thead><tr><th>Élève</th><th>Classe</th><th class="num">Frais</th><th class="num">Payé</th><th class="num">Reste</th><th class="no-print"></th></tr></thead>
+  <tbody>
+  {% for s in lignes %}
+  <tr><td><a href="{{ url_for('eleves.detail', eleve_id=s.id) }}"><strong>{{ s.nom }} {{ s.prenom }}</strong></a></td><td>{{ s.classe_nom or '-' }}</td>
+    <td class="num">{{ s.du|money }}</td><td class="num">{{ s.paye|money }}</td><td class="num"><span class="badge danger">{{ s.reste|money }}</span></td>
+    <td class="num no-print"><a class="btn btn-sm btn-primary" href="{{ url_for('paiements.nouveau', eleve=s.id) }}">+ Paiement</a></td></tr>
+  {% else %}<tr><td colspan="6" class="empty">Aucun impayé 🎉</td></tr>{% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Modifier' if e else 'Inscrire' }} un élève · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>{{ 'Modifier l\'élève' if e else 'Inscription d\'un élève' }}</h2></div></div>
+<div class="card" style="max-width:820px;">
+<form method="post">{{ csrf_field() }}
+  <div class="form-row">
+    <div><label>Nom</label><input name="nom" value="{{ e.nom if e }}" required autofocus></div>
+    <div><label>Prénom</label><input name="prenom" value="{{ e.prenom if e }}" required></div>
+  </div>
+  <div class="form-row">
+    <div><label>Date de naissance</label><input name="date_naissance" type="date" value="{{ e.date_naissance if e and e.date_naissance }}"></div>
+    <div><label>Sexe</label><select name="sexe"><option value="">-</option>
+      <option value="M" {{ 'selected' if e and e.sexe == 'M' }}>Garçon</option><option value="F" {{ 'selected' if e and e.sexe == 'F' }}>Fille</option></select></div>
+    <div><label>Classe</label><select name="classe_id"><option value="">-- Aucune --</option>
+      {% for c in classes %}<option value="{{ c.id }}" {{ 'selected' if e and e.classe_id == c.id }}>{{ c.nom }} (capacité {{ c.capacite }})</option>{% endfor %}</select></div>
+  </div>
+  {% if not classes %}<p class="muted">💡 Créez d'abord une <a href="{{ url_for('classes.ajouter') }}">classe</a>.</p>{% endif %}
+  <div class="form-row">
+    <div><label>Nom du parent / tuteur</label><input name="parent_nom" value="{{ e.parent_nom if e and e.parent_nom }}"></div>
+    <div><label>Téléphone du parent</label><input name="parent_tel" value="{{ e.parent_tel if e and e.parent_tel }}"></div>
+  </div>
+  <div class="form-row">
+    <div><label>Email</label><input name="email" type="email" value="{{ e.email if e and e.email }}"></div>
+    <div><label>Adresse</label><input name="adresse" value="{{ e.adresse if e and e.adresse }}"></div>
+  </div>
+  {% if e %}<label>Statut</label><select name="statut"><option value="actif" {{ 'selected' if e.statut == 'actif' }}>Actif</option><option value="inactif" {{ 'selected' if e.statut == 'inactif' }}>Inactif (a quitté l'école)</option></select>{% endif %}
+  <button class="btn btn-primary">Enregistrer</button>
+  <a class="btn" href="{{ url_for('eleves.liste') }}">Annuler</a>
+</form></div>
+{% endblock %}

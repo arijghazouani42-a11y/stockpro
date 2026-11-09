@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import role_badge with context %}
+{% block title %}Profil · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Profil</h2><div class="sub">{{ g.user.email }} · {{ role_badge(g.user.role) }}</div></div></div>
+<div class="grid grid-2">
+  <div class="card"><h3>👤 Mes informations</h3>
+    <form method="post">{{ csrf_field() }}<input type="hidden" name="action" value="profil">
+      <label>Nom</label><input name="nom" value="{{ g.user.nom }}" required>
+      <button class="btn btn-primary">Enregistrer</button></form></div>
+  <div class="card"><h3>🔑 Changer le mot de passe</h3>
+    <form method="post">{{ csrf_field() }}<input type="hidden" name="action" value="mdp">
+      <label>Mot de passe actuel</label><input name="actuel" type="password" required>
+      <label>Nouveau mot de passe</label><input name="nouveau" type="password" minlength="6" required>
+      <button class="btn btn-primary">Modifier</button></form></div>
+  {% if g.user.role == 'admin' %}
+  <div class="card"><h3>🏫 Mon école</h3>
+    <form method="post">{{ csrf_field() }}<input type="hidden" name="action" value="ecole">
+      <label>Nom de l'école</label><input name="ecole_nom" value="{{ g.user.ecole_nom }}" required>
+      <label>Année scolaire</label><input name="annee_scolaire" value="{{ g.user.annee_scolaire }}" placeholder="2026-2027">
+      <button class="btn btn-primary">Enregistrer</button></form></div>
+  {% endif %}
+</div>
+{% endblock %}

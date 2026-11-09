@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Rapports · SchoolPro{% endblock %}
+{% block content %}
+<div class="page-head"><div><h2>Rapports</h2><div class="sub">Résultats scolaires et situation financière</div></div></div>
+
+<div class="grid grid-3" style="margin-bottom:20px;">
+  <div class="card stat"><div class="ic ic-indigo">🧾</div><div><div class="label">Frais attendus</div><div class="value">{{ finance.du|money }}</div></div></div>
+  <div class="card stat"><div class="ic ic-green">✅</div><div><div class="label">Encaissé</div><div class="value">{{ finance.paye|money }}</div>
+    <div class="sub">{% if finance.taux is not none %}{{ '%.0f'|format(finance.taux) }} % recouvré{% else %}-{% endif %}</div></div></div>
+  <div class="card stat"><div class="ic ic-red">⏳</div><div><div class="label">Reste à recouvrer</div><div class="value">{{ finance.reste|money }}</div></div></div>
+</div>
+
+<div class="card"><h3>👥 Effectif par classe</h3>
+  <table><tbody>{% for r in effectifs %}<tr><td>{{ r.nom }}</td><td class="num"><strong>{{ r.n }}</strong> élève(s)</td></tr>
+  {% else %}<tr><td class="empty">Aucune classe.</td></tr>{% endfor %}</tbody></table></div>
+
+{% if g.user.plan == 'pro' %}
+<form method="get" class="filters">
+  <select name="trimestre">
+    <option value="0" {{ 'selected' if trimestre == 0 }}>Toute l'année</option>
+    <option value="1" {{ 'selected' if trimestre == 1 }}>Trimestre 1</option>
+    <option value="2" {{ 'selected' if trimestre == 2 }}>Trimestre 2</option>
+    <option value="3" {{ 'selected' if trimestre == 3 }}>Trimestre 3</option></select>
+  <button class="btn">Afficher</button>
+</form>
+<div class="card flush table-wrap">
+  <h3 style="padding:14px 12px 0;">🎯 Résultats par classe</h3>
+  <table>
+    <thead><tr><th>Classe</th><th class="num">Élèves</th><th class="num">Avec notes</th><th class="num">Moyenne</th><th class="num">Taux de réussite</th></tr></thead>
+    <tbody>
+    {% for c in par_classe %}
+    <tr><td><strong>{{ c.nom }}</strong></td><td class="num">{{ c.effectif }}</td><td class="num">{{ c.notes }}</td>
+        <td class="num">{{ c.moyenne|note }}</td>
+        <td class="num">{% if c.reussite is not none %}<span class="badge {{ 'ok' if c.reussite >= 50 else 'danger' }}">{{ '%.0f'|format(c.reussite) }} %</span>{% else %}-{% endif %}</td></tr>
+    {% else %}<tr><td colspan="5" class="empty">Aucune classe.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="card"><h3>🏆 Meilleurs élèves</h3>
+  <table><tbody>
+  {% for t in top5 %}<tr><td><strong>#{{ loop.index }}</strong> {{ t.nom }} <span class="muted">{{ t.classe }}</span></td><td class="num"><span class="badge ok">{{ t.moyenne|note }} / 20</span></td></tr>
+  {% else %}<tr><td class="empty">Aucune note enregistrée.</td></tr>{% endfor %}
+  </tbody></table></div>
+{% else %}
+<div class="card lock"><div class="big">🔒</div><p><strong>Résultats par classe, taux de réussite et meilleurs élèves</strong><br>
+  Disponibles avec le plan Pro. <a href="{{ url_for('abonnement.index') }}">Passer au Pro</a></p></div>
+{% endif %}
+{% endblock %}
